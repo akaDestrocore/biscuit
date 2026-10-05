@@ -1,0 +1,13 @@
+build
+mx.scratch
+!.settings
+
+tests/build/
+
+*.pyc
+
+.venv/
+
+.vscode/settings.json
+.vscode/launch.json
+.vscode/svd/
