@@ -192,7 +192,7 @@ int main(void)
 		mono2_run();
 		bipolar1_run();
 		bipolar2_run();
-  	}
+  }
   /* USER CODE END 3 */
 }
 

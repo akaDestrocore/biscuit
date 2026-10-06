@@ -271,7 +271,7 @@ static void bipolar1Coag_run(void) {
     }
 
     // Autostop
-    if ((gBipolar1CoagStart = GUCU_ACIK) && (1U == gBipolarAutoStop) && (1U == gLigasurePedal) && (gLigasureWattYaz > 500U)) {
+    if ((gBipolar1CoagStart == GUCU_ACIK) && (1U == gBipolarAutoStop) && (1U == gLigasurePedal) && (gLigasureWattYaz > 500U)) {
         gAutoStopStart0 = 1U;
     }
 

@@ -122,8 +122,8 @@ static void bipolar2Cut_run(void) {
             gCutFormulAc = 0U;
             if (10.0f == gBipolar2CutPol) gBipolar2CutPol = 2.0f;
             if (15.0f == gBipolar2CutPol) gBipolar2CutPol = 9.0f;
-            gCutWatt = (0.000007f * gBipolar1CutPol * gBipolar1CutPol * gBipolar1CutPol) \
-					- (0.0039f * gBipolar1CutPol * gBipolar1CutPol) + (1.2532f * gBipolar1CutPol) + 40.714f;
+            gCutWatt = (0.000007f * gBipolar2CutPol * gBipolar2CutPol * gBipolar2CutPol) \
+					- (0.0039f * gBipolar2CutPol * gBipolar2CutPol) + (1.2532f * gBipolar2CutPol) + 40.714f;
             gCutKorumaStart = 0U;
         }
 
@@ -219,8 +219,8 @@ static void bipolar2Coag_run(void) {
         if ((gBipolar2CoagPol < 20.0f) || (1U == gCoagFormulAc)) {
             gCoagFormulAc = 0U;
             if (10.0f == gBipolar2CoagPol) gBipolar2CoagPol = 7.0f;
-            gCoagWatt = (0.000004f * gBipolar1CoagPol * gBipolar1CoagPol * gBipolar1CoagPol) \
-								- (0.0032f * gBipolar1CoagPol * gBipolar1CoagPol) + (1.224f * gBipolar1CoagPol) + 34.541f;
+            gCoagWatt = (0.000004f * gBipolar2CoagPol * gBipolar2CoagPol * gBipolar2CoagPol) \
+								- (0.0032f * gBipolar2CoagPol * gBipolar2CoagPol) + (1.224f * gBipolar2CoagPol) + 34.541f;
 
             gCoagKorumaStart = 0U;
         }
