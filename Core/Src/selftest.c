@@ -1,18 +1,25 @@
 /**
-  ******************************************************************************
-  * @file    esu_selftest.c
-  * @brief   Açılış kendi kendini test (Power Supply, Monopolar kart, Bipolar kart)
-  ******************************************************************************
-  */
+ * ╔═══════════════════════════════════════════════════════════════════════╗
+ * ║                              GENX-400HF-L                             ║
+ * ╚═══════════════════════════════════════════════════════════════════════╝
+ *
+ * @file    selftest.c
+ * @brief   Açılış kendi kendini test (Power Supply, Monopolar kart, Bipolar kart)
+ *
+ * @author  destrocore
+ * @date    2026
+ */
+
 #include "core.h"
 #include "modules.h"
 
 /**
   * @brief Üç aşamalı açılış testini çalıştırır; hata olursa hata kodunu yazar ve sonsuz döngüye girer
   * @retval None
-  * @note Sırasıyla: güç kaynağı voltajı, monopolar kart, bipolar kart. Hepsi geçerse geri döner.
+  * @note Sırasıyla güç kaynağı voltajı, monopolar kart, bipolar kart. Hepsi geçerse geri döner.
   */
-void esuSelftest_run(void) {
+void selftest_run(void) {
+
     Bist_State_e durum = BIST_PWR_SUPPLY;
     uint8_t gecikme = 0U;
     bool basladi = false;
@@ -50,7 +57,7 @@ void esuSelftest_run(void) {
                     gAcikSayfa = UI_PAGE_ERROR;
                     (void)NEXTION_sendCmdRetry(pHataKomut);
                     HAL_Delay(100U);
-                    esuAlarm_run();
+                    alarm_run();
                     HAL_Delay(500U);
                     gDusukOncelikAlarm = 0U;
                     gDusukAlarmSay = 0U;
@@ -69,7 +76,7 @@ void esuSelftest_run(void) {
                 } else {
                     gHighVolt = 0U;
                     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_11 | GPIO_PIN_8, GPIO_PIN_RESET);
-                    esuCore_dacSet((float)0.0f);
+                    genx_dacSet((float)0.0f);
                     durum = BIST_OK;
                 }
             }

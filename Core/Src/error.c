@@ -22,22 +22,21 @@ static void error_show(const char *pKomut);
  * Genel API
  * ============================================================*/
 
-
 /**
   * @brief Koruma/hata bayraklarını izler ve öncelik sırasına göre ilk hatayı bir kez gösterir
   * @retval None
   * @note Eski sekiz "ErrorYaz" mandalı tek bir mandalla değiştirildi. Öncelik sırası eski kodla aynıdır.
   */
 void error_run(void) {
-   
-    static bool gosterildi = false;
-    bool hataVar = (1U == gPedalError3) || (1U == gPedal2KezError) || (1U == gPwrKoruma) || (1U == gBiPwrKoruma) \
+
+    static bool isShown = false;
+    bool isError = (1U == gPedalError3) || (1U == gPedal2KezError) || (1U == gPwrKoruma) || (1U == gBiPwrKoruma) \
                 || (1U == gMonoPwrKoruma) || (1U == gBipolarKoruma) || (1U == gMono1Koruma) || (1U == gMono2Koruma);
 
-    if (false == hataVar) {
-        gosterildi = false;
-    } else if ((false == gosterildi) && (0U == gAlarmPlate) && (UI_PAGE_ERROR != gAcikSayfa)) {
-        gosterildi = true;
+    if (false == isError) {
+        isShown = false;
+    } else if ((false == isShown) && (0U == gAlarmPlate) && (UI_PAGE_ERROR != gAcikSayfa)) {
+        isShown = true;
 
         if (1U == gPedalError3) {
             error_show("t0.txt=\"ERROR-04\"");
@@ -64,20 +63,14 @@ void error_run(void) {
  * ================================================================*/
 
 /**
-  * @brief Tüm Start bayraklarını kapatır, alarmı başlatır ve hata sayfasını gösterir
+  * @brief Kayıtlı tüm yolların Start bayraklarını kapatır, alarmı başlatır ve hata sayfasını gösterir
   * @param pKomut Hata metnini yazan Nextion komutu
   * @retval None
   */
 static void error_show(const char *pKomut) {
+
     gDusukOncelikAlarm = 1U;
-    gMono1CutStart = GUCU_KAPALI;
-    gMono1CoagStart = GUCU_KAPALI;
-    gMono2CutStart = GUCU_KAPALI;
-    gMono2CoagStart = GUCU_KAPALI;
-    gBipolar1CutStart = GUCU_KAPALI;
-    gBipolar1CoagStart = GUCU_KAPALI;
-    gBipolar2CutStart = GUCU_KAPALI;
-    gBipolar2CoagStart = GUCU_KAPALI;
+    genx_requestStopAll();
 
     (void)NEXTION_setPage(UI_PAGE_ERROR);
     (void)NEXTION_sendCmdRetry(pKomut);

@@ -34,14 +34,12 @@ target_sources(${PROJECT_NAME} PRIVATE
   "${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/core.c"
   "${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/nextion.c"
   "${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/alarm.c"
-  "${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/bipolar1.c"
-  "${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/bipolar2.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/bipolar.c"
   "${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/error.c"
   "${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/input.c"
-  "${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/monopolar1.c"
-  "${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/monopolar2.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/monopolar.c"
   "${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/plate.c"
-  # "${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/selftest.c"
+  "${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/selftest.c"
   "${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/touch.c"
 )
 

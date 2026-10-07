@@ -24,6 +24,8 @@
 #include "core.h"
 #include "modules.h"
 #include "nextion.h"
+#include "monopolar.h"
+#include "bipolar.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -174,24 +176,25 @@ int main(void)
 
 	(void)HAL_ADC_Start_DMA(&hadc1, (uint32_t *)gAdc1DmaBuff, 5);
 
-	// selftest_run();
+	selftest_run();
+
+  monopolar_init();
+  bipolar_init();
 
 	while (1)
 	{
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+    alarm_run();
     nextion_process();
-		alarm_run();
 		plate_run();
 		error_run();
 		touch_run();
 		input_run();
 		genx_getPwrVal();
-		mono1_run();
-		mono2_run();
-		bipolar1_run();
-		bipolar2_run();
+    monopolar_run();
+		bipolar_run();
   }
   /* USER CODE END 3 */
 }
