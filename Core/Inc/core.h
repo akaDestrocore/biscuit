@@ -21,28 +21,56 @@ extern "C" {
 #include <stdint.h>
 #include <stddef.h>
 #include <math.h>
-#include "modules.h"
-#include "main.h"
-#include "nextion.h"
+#include "genx.h"
 
-#define CORE_MAX_CHANNELS   8U
-#define NEXTION_MAX_DENEME  10U
+#define CORE_MAX_CH 8U
+#define NEXTION_MAX_DENEME 10U
 
 extern char gNumBuff[NEXTION_CMD_MAX_LEN + 1U];
 
-typedef enum {
-  ADC_CH_MONO_PWR     = 0U,
-  ADC_CH_PLATE_RES    = 1U,
-  ADC_CH_PWR          = 2U,
-  ADC_CH_BIPOLAR_PWR  = 3U
-} ADC_Channel_e;
+extern DAC_HandleTypeDef hdac;
+extern TIM_HandleTypeDef htim2;
+extern TIM_HandleTypeDef htim3;
+extern TIM_HandleTypeDef htim4;
+extern TIM_HandleTypeDef htim5;
+extern TIM_HandleTypeDef htim9;
+extern TIM_HandleTypeDef htim13;
+
+/**
+ * @brief Her kanalın ilk alanı olan ortak başlık. Start bayrağı ve sahiplik bu başlık üzerinden yönetilir
+ */
+typedef struct {
+    volatile uint8_t start;
+} Core_Channel_t;
+
+// -- Ölçüm / DAC ----------------------------------------------
+extern volatile uint16_t gAdc1DmaBuff[5];
+extern volatile uint8_t gDacVeri;
+extern bool gPwrYeni;
+extern uint32_t gHighVolt;
 
 typedef enum {
-  MUX_MONO_CUT      = 1U,
-  MUX_MONO_COAG     = 2U,
-  MUX_BIPOLAR_CUT   = 3U,
-  MUX_BIPOLAR_COAG  = 5U
+    ADC_CH_MONO_PWR     = 0U,
+    ADC_CH_PLATE_RES    = 1U,
+    ADC_CH_PWR          = 2U,
+    ADC_CH_BIPOLAR_PWR  = 3U,
+    ADC_CH_NTC          = 4U,
+    ADC_CH_COUNT              
+} ADC_Channel_e;
+
+#define MODE_BIT(modeId, AcikMi)     ((1U == (AcikMi)) ? (1UL << (modeId)) : 0UL)
+
+typedef enum {
+    MUX_MONO_CUT      = 1U,
+    MUX_MONO_COAG     = 2U,
+    MUX_BIPOLAR_CUT   = 3U,
+    MUX_BIPOLAR_COAG  = 5U
 } Mux_Combo_e;
+
+typedef enum {
+    GENX_SUCCESS  	= 0,
+    GENX_ERROR    	= -1
+} Genx_Status_t;
 
 /**
  * @brief `BIPOLAR_MODE_CUT` veya `BIPOLAR_MODE_COAG`
@@ -53,17 +81,10 @@ typedef enum {
 } Bipolar_Mode_e;
 
 /**
- * @brief Her yolun (handle) ilk alanı olan ortak başlık. Start bayrağı + sahiplik bu başlık üzerinden yönetilir.
- */
-typedef struct {
-    volatile uint8_t start;
-} Core_Channel_t;
-
-/**
  * @brief Sayfa tanımları
  */
 typedef enum {
-    UI_PAGE_BOOT				        = 0U,
+    UI_PAGE_BOOT                = 0U,
     UI_PAGE_MAIN               	= 1U,
     UI_PAGE_MONO1_CUT_WATT     	= 2U,
     UI_PAGE_MONO1_CUT_MODE     	= 3U,
@@ -192,87 +213,67 @@ typedef enum {
 	S31__OK_BUTTON						= NEXTION_TOUCH_KEY(31U, 24U)
 } Display_Component_e;
 
-extern DAC_HandleTypeDef hdac;
-extern TIM_HandleTypeDef htim2;
-extern TIM_HandleTypeDef htim3;
-extern TIM_HandleTypeDef htim4;
-extern TIM_HandleTypeDef htim5;
-extern TIM_HandleTypeDef htim9;
-extern TIM_HandleTypeDef htim13;
 
-// -- Ölçüm / DAC ----------------------------------------------
-extern volatile uint16_t gAdc1DmaBuff[5];
-extern volatile uint8_t gDacVeri;
-extern uint32_t gHighVolt;
-extern bool gPwrYeni;
-
-// -- Sayfa / plate / alarm ------------------------------------
-extern UI_Page_e gAcikSayfa;
-extern uint32_t gPlate;
-extern uint8_t gPlate100Overresistance;
-extern uint8_t gPlateError;
-extern uint8_t gAlarmPlate;
-extern uint8_t gDusukOncelikAlarm;
-extern uint16_t gDusukAlarmSay;
-extern uint8_t gMonopolarCutSes;
-extern uint8_t gMonopolarCoagSes;
-extern uint8_t gBipolarCutSes;
-extern uint8_t gBipolarCoagSes;
-
-// -- Kanal bazlı (yollar arası paylaşılan) pedal / hand / ligasure bayrakları
+// -- Kanal bazlı pedal/hand/ligasure bayrakları
 extern uint8_t gMono1Pedal;
 extern uint8_t gMono2Pedal;
-extern uint8_t gBipolar1PedalCift;
-extern uint8_t gBipolar2PedalCift;
-extern uint8_t gBipolarHand;
+extern uint32_t gLigasureWattYaz;
 extern uint8_t gBipolarAutoStop;
 extern uint8_t gLigasureStart;
 extern uint8_t gLigasurePedal;
-extern uint32_t gLigasureWattYaz;
 extern uint8_t gAutoStop2;
-extern uint8_t gAutoStopCiftPedal;
-extern uint8_t gAutoStopTekPedal;
+extern uint8_t gBipolar1PedalCift;
+extern uint8_t gBipolar2PedalCift;
+extern uint8_t gBipolarHand;
 
 // -- Hata bayrakları ------------------------------------------
-extern uint8_t gPedalError3;
-extern uint8_t gPedal2KezError;
-extern uint8_t gPwrKoruma;
-extern uint8_t gBiPwrKoruma;
-extern uint8_t gMonoPwrKoruma;
-extern uint8_t gBipolarKoruma;
 extern uint8_t gMono1Koruma;
 extern uint8_t gMono2Koruma;
+extern uint8_t gPwrKoruma;
+extern uint8_t gMonoPwrKoruma;
+extern uint8_t gPedalError3;
+extern uint8_t gBipolarKoruma;
+extern uint8_t gBiPwrKoruma;
+extern uint8_t gPedal2KezError;
 
-// -- Ekran ayarları (Nextion'dan okunan ham değerler) ----------
+// -- Sayfa/plate/alarm ----------------------------------------
+extern uint8_t gPlate100Overresistance;
+extern uint8_t gMonopolarCutSes;
+extern uint8_t gMonopolarCoagSes;
+extern uint8_t gAlarmPlate;
+extern UI_Page_e gAcikSayfa;
+extern uint32_t gPlate;
+extern uint8_t gPlateError;
+extern uint8_t gDusukOncelikAlarm;
+extern uint16_t gDusukAlarmSay;
+extern uint8_t gBipolarCutSes;
+extern uint8_t gBipolarCoagSes;
+
+// -- Nextion'dan okunan ham değerler --------------------------
 extern uint32_t gEndoCutKademe;
 extern uint32_t gEndoCoagKademe;
 extern uint32_t gEndoCutSure;
 extern uint32_t gEndoCoagSure;
 extern uint32_t gSesVeri;
 
-#define MODE_BIT(modeId, AcikMi)     ((1U == (AcikMi)) ? (1UL << (modeId)) : 0UL)
-
 /* =========================================================================
  * Genel API
  * ========================================================================= */
 
-void genx_dacSet(float val);
-void genx_muxSelect(uint8_t ch);
-void genx_monoEnable(uint16_t relayPin, uint8_t muxCh);
-void genx_bipolarEnable(Bipolar_Mode_e mode);
-void genx_bipolarDisable(void);
+void genx_dacUygula(float val);
+void genx_kanalUygula(Core_Channel_t *pCh);
+int8_t genx_sahiplendir(const Core_Channel_t *pSahip);
+void genx_muxSecimi(uint8_t ch);
+void genx_monoAc(uint16_t relayPin, uint8_t muxCh);
+void genx_bipolarAc(Bipolar_Mode_e mode);
+void genx_bipolarKapat(void);
+void genx_serbestBirak(const Core_Channel_t *pSahip);
+bool genx_sayacBittiMi(bool kosul, uint8_t *pCnt);
+bool genx_baskaAktifVarMi(const Core_Channel_t *pSelf);
+void genx_hepsiniDurdur(void);
 void genx_getPwrVal(void);
-bool genx_isCounterDone(bool isCondition, uint8_t *pCnt);
-
-// -- Çıkış sahipliği (token) ve kanal kaydı
-void genx_registerChannel(Core_Channel_t *pCh);
-uint8_t genx_claim(const Core_Channel_t *pOwner);
-void genx_release(const Core_Channel_t *pOwner);
-bool genx_isOtherChannelActive(const Core_Channel_t *pSelf);
-void genx_requestStopAll(void);
 
 // -- Nextion yardımcıları
-Nextion_Status_e nextion_getVarBlocking(void *pContent, const char *pCmd, uint16_t contentSize);
 Nextion_Status_e NEXTION_sendCmdRetry(const char *pCmd);
 Nextion_Status_e NEXTION_sendNumRetry(char *pBuf, uint32_t bufSize, const char *pPrefix, int16_t num);
 Nextion_Status_e NEXTION_getVarRetry(void *pDst, const char *pCmd, uint16_t size);

@@ -1,6 +1,10 @@
 {
   "bundles": [
     {
+      "name": "cmake",
+      "version": "4.4.0+st.1"
+    },
+    {
       "name": "ninja",
       "version": "1.13.2+st.1"
     },

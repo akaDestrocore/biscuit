@@ -19,18 +19,16 @@ extern "C" {
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "core.h"
-#include "modules.h"
-#include "channels_cfg.h"
+#include "genx.h"
 
 /* =========================================================================
  * Mod tanımları
  * ========================================================================= */
 typedef enum {
-    BIPOLAR_CUTMODE_CUTTING     = 1U,
-    BIPOLAR_CUTMODE_SCISSORS    = 2U,
-    BIPOLAR_CUTMODE_BIVAPO      = 3U,
-    BIPOLAR_CUTMODE_BIREZO      = 4U
+    BIPOLAR_CUTMODE_CUTTING         = 1U,
+    BIPOLAR_CUTMODE_SCISSORS        = 2U,
+    BIPOLAR_CUTMODE_BIVAPO          = 3U,
+    BIPOLAR_CUTMODE_BIREZO          = 4U
 } Bipolar_CutMode_e;
 
 typedef enum {
@@ -47,32 +45,31 @@ typedef enum {
 } Bipolar_SealCoagMode_e;
 
 typedef enum {
-    BIPOLAR_FUNCTION_CUT    = 0U,
-    BIPOLAR_FUNCTION_COAG   = 1U
+    BIPOLAR_ISLEV_CUT               = 0U,
+    BIPOLAR_ISLEV_COAG              = 1U
 } Bipolar_Function_e;
 
 typedef enum {
-    BIPOLAR_PROFILE_STANDARD    = 0U,
-    BIPOLAR_PROFILE_SEAL        = 1U
-} Bipolar_Profile_e;
+    BIPOLAR_CATEGORY_STANDARD        = 0U,
+    BIPOLAR_CATEGORY_SEAL            = 1U
+} Bipolar_Category_e;
 
 typedef enum {
-    BIPOLAR_STATE_IDLE      = 0U,
-    BIPOLAR_STATE_ACTIVE    = 1U
+    BIPOLAR_STATE_IDLE              = 0U,
+    BIPOLAR_STATE_ACTIVE            = 1U
 } Bipolar_State_e;
 
 /* =========================================================================
  * Yapılar
  * ========================================================================= */
-
  /**
  * @brief Yolun sabit yapılandırması
  */
 typedef struct {
     Bipolar_Function_e function;
-    Bipolar_Profile_e profile;
-    uint32_t enabled_mask;
-    uint32_t fallback_mode;
+    Bipolar_Category_e category;
+    uint32_t etkin_maske;
+    uint32_t varsayilan_mod;
     uint32_t max_watt;
     const char *pWattGetCmd;
     const char *pModeGetCmd;
@@ -83,8 +80,8 @@ typedef struct {
  * @brief Yolun çalışma anı durumu
  */
 typedef struct {
-    Core_Channel_t common;
-    Bipolar_State_e state;
+    Core_Channel_t genel;
+    Bipolar_State_e durum;
     uint8_t basma;
     uint8_t birakma;
     uint16_t okuma_gecikme;
@@ -94,7 +91,7 @@ typedef struct {
     bool yeniden_hesap;
     uint32_t koruma_veri;
     float watt;
-    uint8_t autostop_armed;
+    uint8_t autostop_etkin;
     uint32_t user_watt;
     uint32_t user_mode;
     float pol;
@@ -102,14 +99,12 @@ typedef struct {
 
 typedef struct {
     const Bipolar_Config_t *pCfg;
-    Bipolar_Runtime_t canli;
+    Bipolar_Runtime_t runtime;
 } Bipolar_Handle_t;
 
-
-/* ============================================================
+/* =========================================================================
  * Mod açma/kapama maskeleri
- * ============================================================*/
-
+ * ========================================================================= */
 #define BIPOLAR1_CUT_MASK ( MODE_BIT(BIPOLAR_CUTMODE_CUTTING,   BIPOLAR1_CUT_EN_CUTTING) \
                             | MODE_BIT(BIPOLAR_CUTMODE_SCISSORS,  BIPOLAR1_CUT_EN_SCISSORS) \
                             | MODE_BIT(BIPOLAR_CUTMODE_BIVAPO,    BIPOLAR1_CUT_EN_BIVAPO) \
@@ -148,9 +143,9 @@ extern Bipolar_Handle_t gBipolar2Coag;
  * Genel API
  * ========================================================================= */
 void bipolar_init(void);
-bool bipolar_isModeEnabled(const Bipolar_Handle_t *hbip, uint32_t modeId);
-bool bipolar_isModeCorrected(Bipolar_Handle_t *hbip);
-void bipolar_updatePol(Bipolar_Handle_t *hbip);
+bool bipolar_modEtkinMi(const Bipolar_Handle_t *hbip, uint32_t modeId);
+void bipolar_polHesap(Bipolar_Handle_t *hbip);
+bool bipolar_modKontrol(Bipolar_Handle_t *hbip);
 
 
 #ifdef __cplusplus

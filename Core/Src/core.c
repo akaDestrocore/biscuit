@@ -10,8 +10,7 @@
  * @date    2026
  */
 
-#include "core.h"
-
+#include "genx.h"
 
 // -- Numaralı komutlar için kullanılacak olan global bir buffer 
 char gNumBuff[NEXTION_CMD_MAX_LEN + 1U];
@@ -20,46 +19,52 @@ char gNumBuff[NEXTION_CMD_MAX_LEN + 1U];
 
 // DMA buraya CPU'yu meşgul etmeye gerek kalmadan arka planda yazacak
 volatile uint16_t gAdc1DmaBuff[5];
+
 volatile uint8_t gDacVeri = 0U;
-uint32_t gHighVolt = 0U;
 bool gPwrYeni = false;
+uint32_t gHighVolt = 0U;
 
-// -- Sayfa / plate / alarm ------------------------------------
-UI_Page_e gAcikSayfa = UI_PAGE_BOOT;
-uint32_t gPlate = 0U;
-uint8_t gPlate100Overresistance = 0U;
-uint8_t gPlateError = 0U;
-uint8_t gAlarmPlate = 0U;
-uint8_t gDusukOncelikAlarm = 0U;
-uint16_t gDusukAlarmSay = 0U;
-uint8_t gMonopolarCutSes = 0U;
-uint8_t gMonopolarCoagSes = 0U;
-uint8_t gBipolarCutSes = 0U;
-uint8_t gBipolarCoagSes = 0U;
-
-// -- Bipolar yardımcı bayrakları ------------------------------
+// -- Monopolar yardımcı bayrakları ----------------------------
 uint8_t gMono1Pedal = 0U;
 uint8_t gMono2Pedal = 0U;
-uint8_t gBipolar1PedalCift = 0U;
-uint8_t gBipolar2PedalCift = 0U;
-uint8_t gBipolarHand = 0U;
+
+// -- Bipolar yardımcı bayrakları ------------------------------
+uint32_t gLigasureWattYaz = 0U;
 uint8_t gBipolarAutoStop = 0U;
 uint8_t gLigasureStart = 0U;
 uint8_t gLigasurePedal = 0U;
-uint32_t gLigasureWattYaz = 0U;
 uint8_t gAutoStop2 = 0U;
-uint8_t gAutoStopCiftPedal = 0U;
-uint8_t gAutoStopTekPedal = 0U;
+uint8_t gBipolar1PedalCift = 0U;
+uint8_t gBipolar2PedalCift = 0U;
+uint8_t gBipolarHand = 0U;
 
 // -- Hata bayrakları ------------------------------------------
-uint8_t gPedalError3 = 0U;
-uint8_t gPedal2KezError = 0U;
-uint8_t gPwrKoruma = 0U;
-uint8_t gBiPwrKoruma = 0U;
-uint8_t gMonoPwrKoruma = 0U;
-uint8_t gBipolarKoruma = 0U;
 uint8_t gMono1Koruma = 0U;
 uint8_t gMono2Koruma = 0U;
+uint8_t gPwrKoruma = 0U;
+uint8_t gMonoPwrKoruma = 0U;
+uint8_t gPedalError3 = 0U;
+uint8_t gBipolarKoruma = 0U;
+uint8_t gBiPwrKoruma = 0U;
+uint8_t gPedal2KezError = 0U;
+
+// -- Kanal kaydı ve çıkış sahipliği ---------------------------
+static Core_Channel_t *gpChannels[CORE_MAX_CH];
+static uint8_t gChannelCount = 0U;
+static const Core_Channel_t *gMutex = NULL;
+
+// -- Sayfa/plate/alarm ----------------------------------------
+uint8_t gPlate100Overresistance = 0U;
+uint8_t gMonopolarCutSes = 0U;
+uint8_t gMonopolarCoagSes = 0U;
+UI_Page_e gAcikSayfa = UI_PAGE_BOOT;
+uint8_t gAlarmPlate = 0U;
+uint32_t gPlate = 0U;
+uint8_t gPlateError = 0U;
+uint8_t gDusukOncelikAlarm = 0U;
+uint16_t gDusukAlarmSay = 0U;
+uint8_t gBipolarCutSes = 0U;
+uint8_t gBipolarCoagSes = 0U;
 
 // -- Ekran ayarları -------------------------------------------
 uint32_t gEndoCutKademe = 1U;
@@ -67,11 +72,6 @@ uint32_t gEndoCoagKademe = 1U;
 uint32_t gEndoCutSure = 1U;
 uint32_t gEndoCoagSure = 1U;
 uint32_t gSesVeri = 0U;
-
-// -- Kanal kaydı ve çıkış sahipliği ---------------------------
-static Core_Channel_t *gpChannels[CORE_MAX_CHANNELS];
-static uint8_t gChannelCount = 0U;
-static const Core_Channel_t *gpOwner = NULL;
 
 /* ============================================================
  * Genel API
@@ -82,12 +82,13 @@ static const Core_Channel_t *gpOwner = NULL;
   * @param val Ham DAC değeri
   * @retval None
   */
-void genx_dacSet(float val) {
-
+void genx_dacUygula(float val) {
+    
     float edge = ceilf(val);
-
+    
     if (false == (edge >= 0.0f)) {
-        edge = 0.0f;
+        
+        edge = 0.0f; 
     }
 
     if (edge > 255.0f) {
@@ -99,13 +100,48 @@ void genx_dacSet(float val) {
 }
 
 /**
+  * @brief Bir kanalı kanal kaydına ekler
+  * @param pCh Core_Channel_t tipinde kanalın ortak başlığı
+  * @retval None
+  */
+void genx_kanalUygula(Core_Channel_t *pCh) {
+
+    if (NULL == pCh) {
+        return;
+    }
+    if (gChannelCount < CORE_MAX_CH) {
+
+        gpChannels[gChannelCount] = pCh;
+        gChannelCount++;
+    }
+}
+
+/**
+  * @brief Güç çıkışı sahipliğini almaya çalışır. Aynı sahip tekrar çağırırsa başarılıdır.
+  * @param pOwner Sahipliği isteyen kanalın ortak yapısı
+  * @retval 0 sahiplik alındı, 1 başka bir kanal sahip
+  */
+int8_t genx_sahiplendir(const Core_Channel_t *pSahip) {
+
+    int8_t result = GENX_ERROR;
+
+    if ((NULL == gMutex) || (pSahip == gMutex)) {
+        gMutex = pSahip;
+        result = GENX_SUCCESS;
+    }
+
+    return result;
+}
+
+/**
   * @brief CD4051 kanalını seçer
   * @param ch 0-7 (bit2=PA12, bit1=PA11, bit0=PA8), 0 hepsini kapatır
   * @retval None
   */
-void genx_muxSelect(uint8_t ch) {
+void genx_muxSecimi(uint8_t ch) {
 
     if (ch <= 7U) {
+
         uint32_t allBits = (uint32_t)GPIO_PIN_8 | (uint32_t)GPIO_PIN_11 | (uint32_t)GPIO_PIN_12;
         uint32_t setBits = 0U;
 
@@ -124,55 +160,138 @@ void genx_muxSelect(uint8_t ch) {
             setBits |= GPIO_PIN_12;
         }
 
-        GPIOA->BSRR = setBits | ((allBits & ~setBits) << 16U);
+        // Sıfırlanmaması gereken tüm pinler 0 olsun
+        GPIOA->BSRR = (allBits & ~setBits) << 16U;
+
+        // Setlenmesi gereken pinleri 1'e ayarlansın
+        GPIOA->BSRR = setBits;
     }
 }
 
 /**
-  * @brief Monopolar çıkış yolunu açar
-  * @param relayPin Kanal rölesi (PD1 yada PD3)
-  * @param muxCh CD4051 kanalı (MUX_MONO_CUT / MUX_MONO_COAG)
+  * @brief Monopolar çıkış kanalını açar
+  * @param relayPin Kanal rölesi
+  * @param muxCh MUX_MONO_CUT yada MUX_MONO_COAG
   * @retval None
   */
-void genx_monoEnable(uint16_t relayPin, uint8_t muxCh) {
+void genx_monoAc(uint16_t relayPin, uint8_t muxCh) {
 
-    HAL_TIM_PWM_Start(&htim13, TIM_CHANNEL_1);                          // PIN_A6 // 380KHz
-    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_11, GPIO_PIN_RESET);              // Monopolar Relay
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4, GPIO_PIN_SET);                 // CUT koruma
-    HAL_GPIO_WritePin(GPIOD, relayPin | GPIO_PIN_8, GPIO_PIN_SET);      // Kanal ve güç röleleri
-    genx_muxSelect(muxCh);
-    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_9, GPIO_PIN_SET);                 // FAN
+    HAL_TIM_PWM_Start(&htim13, TIM_CHANNEL_1); // PIN_A6 // 380KHz
+    HAL_GPIO_WritePin(BIPOLAR_ON_R_GPIO_Port, BIPOLAR_ON_R_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(MONO_KORUMA_GPIO_Port, MONO_KORUMA_Pin, GPIO_PIN_SET);
+    
+    if (MONO1_RELAY_Pin == relayPin) {
+        HAL_GPIO_WritePin(MONO1_RELAY_GPIO_Port, relayPin | PWR_ON_R_Pin, GPIO_PIN_SET);
+    }
+
+    else if (MONO2_RELAY_Pin == relayPin) {
+        HAL_GPIO_WritePin(MONO2_RELAY_GPIO_Port, relayPin | PWR_ON_R_Pin, GPIO_PIN_SET);
+    }
+
+    genx_muxSecimi(muxCh);
+
+    HAL_GPIO_WritePin(FAN_R_GPIO_Port, FAN_R_Pin, GPIO_PIN_SET);
 }
 
 /**
-  * @brief Bipolar çıkış yolunu açar
+  * @brief Bipolar çıkış kanalını açar
   * @param mode `BIPOLAR_MODE_CUT` veya `BIPOLAR_MODE_COAG`
   * @retval None
   */
-void genx_bipolarEnable(Bipolar_Mode_e mode) {
+void genx_bipolarAc(Bipolar_Mode_e mode) {
 
     HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, (BIPOLAR_MODE_CUT == mode) ? GPIO_PIN_SET : GPIO_PIN_RESET); // Bipolar Cut Relay
-    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_11 | GPIO_PIN_8, GPIO_PIN_SET);   // Bipolar Relay, Power Relay On
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);                // 74LS
-    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_10, GPIO_PIN_SET);                // 74LS
-    genx_muxSelect((BIPOLAR_MODE_CUT == mode) ? MUX_BIPOLAR_CUT : MUX_BIPOLAR_COAG);
-    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_9, GPIO_PIN_SET);                 // FAN
+    HAL_GPIO_WritePin(BIPOLAR_CUT_R_GPIO_Port, BIPOLAR_CUT_R_Pin, (BIPOLAR_MODE_CUT == mode) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(BIPOLAR_ON_R_GPIO_Port, BIPOLAR_ON_R_Pin | PWR_ON_R_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(_74LS_R1_GPIO_Port, _74LS_R1_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(_74LS_R2_GPIO_Port, _74LS_R2_Pin, GPIO_PIN_SET);
+    genx_muxSecimi((BIPOLAR_MODE_CUT == mode) ? MUX_BIPOLAR_CUT : MUX_BIPOLAR_COAG);
+    HAL_GPIO_WritePin(FAN_R_GPIO_Port, FAN_R_Pin, GPIO_PIN_SET);
 }
 
 /**
-  * @brief Bipolar çıkış yolunu kapatır
+  * @brief Bipolar çıkış kanalını kapatır
   * @retval None
   */
-void genx_bipolarDisable(void) {
+void genx_bipolarKapat(void) {
 
-    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);              // Bipolar Cut Relay
-    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_11 | GPIO_PIN_8, GPIO_PIN_RESET); // Bipolar Relay, Power Relay Off
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);              // 74LS
-    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_10, GPIO_PIN_RESET);              // 74LS
-    genx_muxSelect(0U);
-    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_9, GPIO_PIN_RESET);               // FAN
+    HAL_GPIO_WritePin(BIPOLAR_CUT_R_GPIO_Port, BIPOLAR_CUT_R_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(BIPOLAR_ON_R_GPIO_Port, BIPOLAR_ON_R_Pin | PWR_ON_R_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(_74LS_R1_GPIO_Port, _74LS_R1_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(_74LS_R2_GPIO_Port, _74LS_R2_Pin, GPIO_PIN_RESET);
+    genx_muxSecimi(0U);
+    HAL_GPIO_WritePin(FAN_R_GPIO_Port, FAN_R_Pin, GPIO_PIN_RESET);
     HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_1);
+}
+
+/**
+  * @brief Güç çıkışı sahipliğini bırakır
+  * @param pSahip Sahipliği bırakan kanalın ortak yapısı
+  * @retval None
+  */
+void genx_serbestBirak(const Core_Channel_t *pSahip) {
+
+    if (pSahip == gMutex) {
+        gMutex = NULL;
+    }
+}
+
+/**
+  * @brief Koşul sağlandığı sürece sayar, 200'e ulaşınca sayacı sıfırlar
+  * @param kosul Sayılacak koşul
+  * @param pCnt Sayaç değişkenine işaretçi
+  * @retval true sayaç bitti, false henüz bitmedi
+  */
+bool genx_sayacBittiMi(bool kosul, uint8_t *pCnt) {
+
+    bool bitti = false;
+
+    if (true == kosul) {
+        
+        (*pCnt)++;
+
+        if (200U <= *pCnt) {
+            *pCnt = 0U;
+            bitti = true;
+        }
+    }
+
+    return bitti;
+}
+
+/**
+  * @brief Sorgulanan kanal dışında Start bayrağı açık başka kanal var mı?
+  * @param pSelf Sorgulayan kanalın ortak başlığı, hiçbir kanal sorgulamıyorsa NULL
+  * @retval true başka kanal aktif, false hiçbiri aktif değil
+  */
+bool genx_baskaAktifVarMi(const Core_Channel_t *pSelf) {
+
+    bool aktif = false;
+
+    for (uint8_t i = 0U; i < gChannelCount; i++) {
+        
+        if ((pSelf != gpChannels[i]) && (0U != gpChannels[i]->start)) {
+            aktif = true;
+        }
+    }
+
+    if ((NULL != gMutex) && (pSelf != gMutex)) {
+        aktif = true;
+    }
+
+    return aktif;
+}
+
+/**
+  * @brief Kayıtlı tüm kanalların Start bayrağını kapatır
+  * @retval None
+  */
+void genx_hepsiniDurdur(void) {
+
+    for (uint8_t i = 0U; i < gChannelCount; i++) {
+        
+        gpChannels[i]->start = 0U;
+    }
 }
 
 /**
@@ -182,123 +301,22 @@ void genx_bipolarDisable(void) {
   */
 void genx_getPwrVal(void) {
 
-    static uint32_t lastTick = 0U;
-    static bool isWasActive = false;
-    bool isNowActive = (NULL != gpOwner);
+    static uint32_t sonTik = 0U;
+    static bool zatenAktif = false;
+    bool simdiAktif = (NULL != gMutex);
 
     gPwrYeni = false;
 
-    if ((true == isNowActive) && (false == isWasActive)) {
-        lastTick = HAL_GetTick();
+    if ((true == simdiAktif) && (false == zatenAktif)) {
+        sonTik = HAL_GetTick();
     }
 
-    isWasActive = isNowActive;
+    zatenAktif = simdiAktif;
 
-    if ((true == isNowActive) && ((HAL_GetTick() - lastTick) >= 80U)) {     // 80 ms deneme yanılma ile bulundu
-        lastTick = HAL_GetTick();
+    if ((true == simdiAktif) && ((HAL_GetTick() - sonTik) >= 80U)) {     // 80 ms deneme yanılma ile bulundu
+        sonTik = HAL_GetTick();
         gHighVolt = gAdc1DmaBuff[ADC_CH_PWR];
         gPwrYeni = true;
-    }
-}
-
-/**
-  * @brief Koşul sağlandığı sürece sayar, eşiğe (200) ulaşınca sayacı sıfırlar
-  * @param isCondition Sayılacak koşul
-  * @param pCnt Sayaç değişkenine işaretçi
-  * @retval true sayaç bitti, false henüz bitmedi
-  */
-bool genx_isCounterDone(bool isCondition, uint8_t *pCnt) {
-
-    bool isDone = false;
-
-    if (true == isCondition) {
-        (*pCnt)++;
-
-        if (200U <= *pCnt) {
-            *pCnt = 0U;
-            isDone = true;
-        }
-    }
-
-    return isDone;
-}
-
-/**
-  * @brief Bir yolu kanal kaydına ekler (başlangıçta bir kez çağrılır)
-  * @param pCh Yolun ortak başlığı (Core_Channel_t)
-  * @retval None
-  */
-void genx_registerChannel(Core_Channel_t *pCh) {
-
-    if (NULL == pCh) {
-        return;
-    }
-    if (gChannelCount < CORE_MAX_CHANNELS) {
-
-        gpChannels[gChannelCount] = pCh;
-        gChannelCount++;
-    }
-}
-
-/**
-  * @brief Güç çıkışı sahipliğini almaya çalışır. Aynı sahip tekrar çağırırsa başarılıdır.
-  * @param pOwner Sahipliği isteyen yolun ortak başlığı
-  * @retval 0 sahiplik alındı, 1 başka bir yol sahip
-  */
-uint8_t genx_claim(const Core_Channel_t *pOwner) {
-
-    uint8_t result = 1U;
-
-    if ((NULL == gpOwner) || (pOwner == gpOwner)) {
-        gpOwner = pOwner;
-        result = 0U;
-    }
-
-    return result;
-}
-
-/**
-  * @brief Güç çıkışı sahipliğini bırakır (yalnızca mevcut sahip bırakabilir)
-  * @param pOwner Sahipliği bırakan yolun ortak başlığı
-  * @retval None
-  */
-void genx_release(const Core_Channel_t *pOwner) {
-
-    if (pOwner == gpOwner) {
-        gpOwner = NULL;
-    }
-}
-
-/**
-  * @brief Sorgulanan yol dışında aktif (Start bayrağı açık yada çıkış sahibi) başka yol var mı?
-  * @param pSelf Sorgulayan yolun ortak başlığı, hiçbir yol sorgulamıyorsa NULL
-  * @retval true başka yol aktif, false hiçbiri aktif değil
-  */
-bool genx_isOtherChannelActive(const Core_Channel_t *pSelf) {
-
-    bool isActive = false;
-
-    for (uint8_t i = 0U; i < gChannelCount; i++) {
-        if ((pSelf != gpChannels[i]) && (0U != gpChannels[i]->start)) {
-            isActive = true;
-        }
-    }
-
-    if ((NULL != gpOwner) && (pSelf != gpOwner)) {
-        isActive = true;
-    }
-
-    return isActive;
-}
-
-/**
-  * @brief Kayıtlı tüm yolların Start bayrağını kapatır
-  * @retval None
-  */
-void genx_requestStopAll(void) {
-
-    for (uint8_t i = 0U; i < gChannelCount; i++) {
-        gpChannels[i]->start = 0U;
     }
 }
 

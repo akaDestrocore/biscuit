@@ -4,8 +4,8 @@
  * ╚═══════════════════════════════════════════════════════════════════════╝
  *
  * @file    channels_cfg.h
- * @brief   Kanal yolu başına mod açma/kapama anahtarları.
- *          Bir modu açmak/kapatmak için ilgili satırdaki 1U/0U değerini değiştirmek yeterlidir
+ * @brief   Kanal başına mod açma/kapama anahtarları.
+ *          Bir modu açmak/kapatmak için ilgili satırdaki 1/0 değerini değiştirmek yeterlidir
  *
  * @author  destrocore
  * @date    2026
@@ -19,7 +19,7 @@ extern "C" {
 #endif
 
 /* =========================================================================
- * Mod anahtarları
+ * Mod ayarları
  * ========================================================================= */
 
 // -- MONO1 CUT ------------------------------------------------
@@ -71,13 +71,13 @@ extern "C" {
 #define BIPOLAR1_COAG_EN_SEALSURE   0U
 #define BIPOLAR1_COAG_EN_TISSUELOCK 0U
 
-// -- BIPOLAR2 (seal) CUT --------------------------------------
+// -- BIPOLAR2 CUT ---------------------------------------------
 #define BIPOLAR2_CUT_EN_CUTTING     1U
 #define BIPOLAR2_CUT_EN_SCISSORS    1U
 #define BIPOLAR2_CUT_EN_BIVAPO      1U
 #define BIPOLAR2_CUT_EN_BIREZO      1U
 
-// -- BIPOLAR2 (seal) COAG -------------------------------------
+// -- BIPOLAR2 COAG --------------------------------------------
 #define BIPOLAR2_COAG_EN_STANDARD   0U
 #define BIPOLAR2_COAG_EN_FORCED     0U
 #define BIPOLAR2_COAG_EN_STOP       0U

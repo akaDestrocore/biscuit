@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2023 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -21,11 +21,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "core.h"
-#include "modules.h"
-#include "nextion.h"
-#include "monopolar.h"
 #include "bipolar.h"
+#include "genx.h"
+#include "nextion.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -35,6 +33,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -56,7 +55,7 @@ TIM_HandleTypeDef htim9;
 TIM_HandleTypeDef htim13;
 TIM_HandleTypeDef htim14;
 
-UART_HandleTypeDef huart1;
+UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
 static Nextion_Config_t nextion;
@@ -75,18 +74,36 @@ static void MX_TIM13_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM14_Init(void);
 static void MX_TIM5_Init(void);
-static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
-
-/* ============================================================
- * Özel fonksiyon prototipleri
- * ============================================================*/
-static void NEXTION_Init(void);
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+/**
+  * @brief NEXTION İlklendirme Fonksiyonu
+  * @param None
+  * @retval None
+  */
+static void NEXTION_Init(void) {
+
+	nextion.pUsart = USART3;
+    nextion.pGpio_port = GPIOB;
+    nextion.rx_pin_num = 11U;
+    nextion.tx_pin_num = 10U;
+    nextion.gpio_af = GPIO_AF7_USART3;
+    nextion.gpio_ahb1_bits = RCC_AHB1ENR_GPIOBEN;
+    nextion.apbx_bit = RCC_APB1ENR_USART3EN;
+    nextion.is_apb2 = 0U;
+    nextion.apb_freq_hz = HAL_RCC_GetPCLK1Freq();
+    nextion.baud_rate = 230400U;
+    nextion.irqn = USART3_IRQn;
+    nextion.nvic_priority = 8U;
+    nextion.ack_timeout_ms = NEXTION_TIMEOUT_MS;
+    (void)nextion_init(&nextion);
+}
+
 
 /* USER CODE END 0 */
 
@@ -129,73 +146,70 @@ int main(void)
   MX_TIM3_Init();
   MX_TIM14_Init();
   MX_TIM5_Init();
-  MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-	HAL_TIM_PWM_Stop(&htim13, TIM_CHANNEL_1);
-	__HAL_TIM_SET_COMPARE(&htim13, TIM_CHANNEL_1,5);//400Khz
+    HAL_TIM_PWM_Stop(&htim13, TIM_CHANNEL_1);
+	__HAL_TIM_SET_COMPARE(&htim13, TIM_CHANNEL_1,5);    // 400Khz
 	//
 	HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_1);
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1,127);//33Khz
+	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1,127);   // 33Khz
 	//
 	HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_1);
-	__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1,1400U);//1,333hz
+	__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1,1400U); // 1,333hz
 	//
 	HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_1);
-	__HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1,4);//500
+	__HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1,4);     // 500
 	//
 	HAL_TIM_PWM_Stop(&htim9, TIM_CHANNEL_2);
-	__HAL_TIM_SET_COMPARE(&htim9, TIM_CHANNEL_2,300U);//600Hz
+	__HAL_TIM_SET_COMPARE(&htim9, TIM_CHANNEL_2,300U);  // 600Hz
 	//
 	HAL_TIM_PWM_Stop(&htim14, TIM_CHANNEL_1);
-	__HAL_TIM_SET_COMPARE(&htim14, TIM_CHANNEL_1,50U);//40Khz// RF
+	__HAL_TIM_SET_COMPARE(&htim14, TIM_CHANNEL_1,50U);  // 40Khz RF
 	//
-	//-----------------Timer5 Kesme Endocut için----------------------------
-	HAL_TIM_Base_Stop_IT(&htim5);
-	//----------------------------------------------------------------------
-	//------------------Ledleri Aç------------------------------------------
-	HAL_GPIO_WritePin(BIPOLAR_BEYAZ_GPIO_Port, BIPOLAR_BEYAZ_Pin, GPIO_PIN_SET);//Bipolar Beyaz
-	HAL_GPIO_WritePin(MONO1_BEYAZ_GPIO_Port, MONO1_BEYAZ_Pin, GPIO_PIN_SET);//Monopolar1 Beyaz
-	HAL_GPIO_WritePin(MONO2_BEYAZ_GPIO_Port, MONO2_BEYAZ_Pin, GPIO_PIN_SET);//Monopolar2 Beyaz
-	//----------------------------------------------------------------------
-	//------------------açılış ses kapama-----------------------------------
-	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_3, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_7, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_8, GPIO_PIN_SET);
-//
+
+    // TIM5 kesme (endocut)
+    HAL_TIM_Base_Stop_IT(&htim5);
+
+    // LEDler
+    HAL_GPIO_WritePin(BIPOLAR_LED_BEYAZ_GPIO_Port, BIPOLAR_LED_BEYAZ_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(MONO1_LED_BEYAZ_GPIO_Port, MONO1_LED_BEYAZ_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(MONO2_LED_BEYAZ_GPIO_Port, MONO2_LED_BEYAZ_Pin, GPIO_PIN_SET);
+    
+    // Açılış ses kapama
+    HAL_GPIO_WritePin(VOLUME_1_GPIO_Port, VOLUME_1_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(VOLUME_2_GPIO_Port, VOLUME_2_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(VOLUME_3_GPIO_Port, VOLUME_3_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(VOLUME_4_GPIO_Port, VOLUME_4_Pin, GPIO_PIN_SET);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-	//---------------------------------------------------------------------------
-	HAL_DAC_Start(&hdac, DAC_CHANNEL_1);
-	genx_dacSet(10.0f);
+    HAL_DAC_Start(&hdac, DAC_CHANNEL_1);
+    genx_dacUygula(10.0f);
 
-	//------------------nextion ilklendirme----------------------------------
-	NEXTION_Init();
+    // NEXTION ilklendirme
+    NEXTION_Init();
 
-	(void)HAL_ADC_Start_DMA(&hadc1, (uint32_t *)gAdc1DmaBuff, 5);
+    (void)HAL_ADC_Start_DMA(&hadc1, (uint32_t *)gAdc1DmaBuff, ADC_CH_COUNT);
 
-	selftest_run();
+    monopolar_init();
+    bipolar_init();
 
-  monopolar_init();
-  bipolar_init();
-
-	while (1)
-	{
+    while (1)
+    {
+        alarm_yonet();
+        nextion_process();
+        plate_yonet();
+        error_yonet();
+        touch_yonet();
+        input_yonet();
+        genx_getPwrVal();
+        monopolar_yonet();
+        bipolar_yonet();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    alarm_run();
-    nextion_process();
-		plate_run();
-		error_run();
-		touch_run();
-		input_run();
-		genx_getPwrVal();
-    monopolar_run();
-		bipolar_run();
-  }
+    }
   /* USER CODE END 3 */
 }
 
@@ -265,7 +279,7 @@ static void MX_ADC1_Init(void)
   /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
   */
   hadc1.Instance = ADC1;
-  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV8;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
   hadc1.Init.ScanConvMode = ENABLE;
   hadc1.Init.ContinuousConvMode = ENABLE;
@@ -274,8 +288,8 @@ static void MX_ADC1_Init(void)
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc1.Init.NbrOfConversion = 5;
-  hadc1.Init.DMAContinuousRequests = ENABLE;
-  hadc1.Init.EOCSelection = ADC_EOC_SEQ_CONV;
+  hadc1.Init.DMAContinuousRequests = DISABLE;
+  hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
   {
     Error_Handler();
@@ -284,8 +298,8 @@ static void MX_ADC1_Init(void)
   /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
   */
   sConfig.Channel = ADC_CHANNEL_0;
-  sConfig.Rank = 1U;
-  sConfig.SamplingTime = ADC_SAMPLETIME_84CYCLES;
+  sConfig.Rank = 1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_56CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -294,7 +308,7 @@ static void MX_ADC1_Init(void)
   /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
   */
   sConfig.Channel = ADC_CHANNEL_1;
-  sConfig.Rank = 2U;
+  sConfig.Rank = 2;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -391,9 +405,9 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 10-1U;
+  htim2.Init.Prescaler = 10-1;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 254-1U;
+  htim2.Init.Period = 254-1;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
@@ -407,7 +421,7 @@ static void MX_TIM2_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 0U;
+  sConfigOC.Pulse = 0;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
@@ -440,9 +454,9 @@ static void MX_TIM3_Init(void)
 
   /* USER CODE END TIM3_Init 1 */
   htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 21000-1U;
+  htim3.Init.Prescaler = 21000-1;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 2600-1U;
+  htim3.Init.Period = 2600-1;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_PWM_Init(&htim3) != HAL_OK)
@@ -456,7 +470,7 @@ static void MX_TIM3_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 0U;
+  sConfigOC.Pulse = 0;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
@@ -489,9 +503,9 @@ static void MX_TIM4_Init(void)
 
   /* USER CODE END TIM4_Init 1 */
   htim4.Instance = TIM4;
-  htim4.Init.Prescaler = 21-1U;
+  htim4.Init.Prescaler = 21-1;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim4.Init.Period = 8-1U;
+  htim4.Init.Period = 8-1;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_PWM_Init(&htim4) != HAL_OK)
@@ -505,7 +519,7 @@ static void MX_TIM4_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 0U;
+  sConfigOC.Pulse = 0;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
@@ -538,9 +552,9 @@ static void MX_TIM5_Init(void)
 
   /* USER CODE END TIM5_Init 1 */
   htim5.Instance = TIM5;
-  htim5.Init.Prescaler = 24000-1U;
+  htim5.Init.Prescaler = 24000-1;
   htim5.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim5.Init.Period = 35-1U;
+  htim5.Init.Period = 35-1;
   htim5.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim5.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
   if (HAL_TIM_Base_Init(&htim5) != HAL_OK)
@@ -582,9 +596,9 @@ static void MX_TIM9_Init(void)
 
   /* USER CODE END TIM9_Init 1 */
   htim9.Instance = TIM9;
-  htim9.Init.Prescaler = 210-1U;
+  htim9.Init.Prescaler = 210-1;
   htim9.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim9.Init.Period = 600-1U;
+  htim9.Init.Period = 600-1;
   htim9.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim9.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_PWM_Init(&htim9) != HAL_OK)
@@ -592,7 +606,7 @@ static void MX_TIM9_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 0U;
+  sConfigOC.Pulse = 0;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim9, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
@@ -624,9 +638,9 @@ static void MX_TIM13_Init(void)
 
   /* USER CODE END TIM13_Init 1 */
   htim13.Instance = TIM13;
-  htim13.Init.Prescaler = 21-1U;
+  htim13.Init.Prescaler = 21-1;
   htim13.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim13.Init.Period = 10-1U;
+  htim13.Init.Period = 10-1;
   htim13.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim13.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim13) != HAL_OK)
@@ -638,7 +652,7 @@ static void MX_TIM13_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 0U;
+  sConfigOC.Pulse = 0;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim13, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
@@ -670,9 +684,9 @@ static void MX_TIM14_Init(void)
 
   /* USER CODE END TIM14_Init 1 */
   htim14.Instance = TIM14;
-  htim14.Init.Prescaler = 21-1U;
+  htim14.Init.Prescaler = 21-1;
   htim14.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim14.Init.Period = 100-1U;
+  htim14.Init.Period = 100-1;
   htim14.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim14.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim14) != HAL_OK)
@@ -684,7 +698,7 @@ static void MX_TIM14_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 0U;
+  sConfigOC.Pulse = 0;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim14, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
@@ -699,39 +713,6 @@ static void MX_TIM14_Init(void)
 }
 
 /**
-  * @brief USART1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART1_UART_Init(void)
-{
-
-  /* USER CODE BEGIN USART1_Init 0 */
-
-  /* USER CODE END USART1_Init 0 */
-
-  /* USER CODE BEGIN USART1_Init 1 */
-
-  /* USER CODE END USART1_Init 1 */
-  huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200U;
-  huart1.Init.WordLength = UART_WORDLENGTH_8B;
-  huart1.Init.StopBits = UART_STOPBITS_1;
-  huart1.Init.Parity = UART_PARITY_NONE;
-  huart1.Init.Mode = UART_MODE_TX_RX;
-  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
-  if (HAL_UART_Init(&huart1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USART1_Init 2 */
-
-  /* USER CODE END USART1_Init 2 */
-
-}
-
-/**
   * Enable DMA controller clock
   */
 static void MX_DMA_Init(void)
@@ -742,7 +723,7 @@ static void MX_DMA_Init(void)
 
   /* DMA interrupt init */
   /* DMA2_Stream0_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 0, 0U);
+  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
 
 }
@@ -756,6 +737,7 @@ static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
   /* USER CODE BEGIN MX_GPIO_Init_1 */
+
   /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
@@ -767,124 +749,100 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_7|GPIO_PIN_8
-                          |GPIO_PIN_11|GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14
-                          |GPIO_PIN_15|GPIO_PIN_0|GPIO_PIN_1, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOE, SOUND_RELAY_Pin|VOLUME_1_Pin|VOLUME_3_Pin|VOLUME_4_Pin
+                          |PLATE_LED_YESIL_Pin|PLATE_LED_KIRMIZI_Pin|BIPOLAR_LED_MAVI_Pin|BIPOLAR_LED_BEYAZ_Pin
+                          |BIPOLAR_LED_SARI_Pin|RF_MONO_X_FAN_Pin|RF_MONO_RELAY_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13|GPIO_PIN_2|GPIO_PIN_4|GPIO_PIN_5
-                          |GPIO_PIN_7|GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_12, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, BIPOLAR_CUT_R_Pin|GPIO_PIN_2|MONO_KORUMA_Pin|MAIN_BOARD_PWM_R_Pin
+                          |MONO1_LED_BEYAZ_Pin|RF_BIPOLAR_R2_Pin|SPRAY_RELAY_Pin|PLATE_RELAY_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_1|GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14
-                          |GPIO_PIN_15, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, VOLUME_2_Pin|MONO2_LED_MAVI_Pin|MONO1_LED_MAVI_Pin|_74LS_R1_Pin
+                          |MONO2_LED_SARI_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10|GPIO_PIN_11
-                          |GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15|GPIO_PIN_0
-                          |GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_4
-                          |GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOD, PWR_ON_R_Pin|FAN_R_Pin|_74LS_R2_Pin|BIPOLAR_ON_R_Pin
+                          |MONO2_LED_BEYAZ_Pin|MONO1_LED_SARI_Pin|RF_GND_EARTH_R_Pin|HAND_RELAY_Pin
+                          |MONO1_RELAY_Pin|LIGASURE_R1_Pin|MONO2_RELAY_Pin|RF_PWR_RELAY_Pin
+                          |RF_BIPOLAR_R_Pin|LIGASURE_R2_Pin|LIGASURE_R3_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8|GPIO_PIN_11|GPIO_PIN_12, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, CD4051_A_Pin|CD4051_B_Pin|CD4051_C_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : PE2 PE3 PE7 PE8
-                           PE11 PE12 PE13 PE14
-                           PE15 PE0 PE1 */
-  GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_7|GPIO_PIN_8
-                          |GPIO_PIN_11|GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14
-                          |GPIO_PIN_15|GPIO_PIN_0|GPIO_PIN_1;
+  /*Configure GPIO pins : SOUND_RELAY_Pin VOLUME_1_Pin VOLUME_3_Pin VOLUME_4_Pin
+                           PLATE_LED_YESIL_Pin PLATE_LED_KIRMIZI_Pin BIPOLAR_LED_MAVI_Pin BIPOLAR_LED_BEYAZ_Pin
+                           BIPOLAR_LED_SARI_Pin RF_MONO_X_FAN_Pin RF_MONO_RELAY_Pin */
+  GPIO_InitStruct.Pin = SOUND_RELAY_Pin|VOLUME_1_Pin|VOLUME_3_Pin|VOLUME_4_Pin
+                          |PLATE_LED_YESIL_Pin|PLATE_LED_KIRMIZI_Pin|BIPOLAR_LED_MAVI_Pin|BIPOLAR_LED_BEYAZ_Pin
+                          |BIPOLAR_LED_SARI_Pin|RF_MONO_X_FAN_Pin|RF_MONO_RELAY_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PC13 PC2 PC4 PC5
-                           PC7 PC10 PC11 PC12 */
-  GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_2|GPIO_PIN_4|GPIO_PIN_5
-                          |GPIO_PIN_7|GPIO_PIN_10|GPIO_PIN_11|GPIO_PIN_12;
+  /*Configure GPIO pins : BIPOLAR_CUT_R_Pin PC2 MONO_KORUMA_Pin MAIN_BOARD_PWM_R_Pin
+                           MONO1_LED_BEYAZ_Pin RF_BIPOLAR_R2_Pin SPRAY_RELAY_Pin PLATE_RELAY_Pin */
+  GPIO_InitStruct.Pin = BIPOLAR_CUT_R_Pin|GPIO_PIN_2|MONO_KORUMA_Pin|MAIN_BOARD_PWM_R_Pin
+                          |MONO1_LED_BEYAZ_Pin|RF_BIPOLAR_R2_Pin|SPRAY_RELAY_Pin|PLATE_RELAY_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PC1 PC8 */
-  GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_8;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PB1 PB12 PB13 PB14
-                           PB15 */
-  GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14
-                          |GPIO_PIN_15;
+  /*Configure GPIO pins : VOLUME_2_Pin MONO2_LED_MAVI_Pin MONO1_LED_MAVI_Pin _74LS_R1_Pin
+                           MONO2_LED_SARI_Pin */
+  GPIO_InitStruct.Pin = VOLUME_2_Pin|MONO2_LED_MAVI_Pin|MONO1_LED_MAVI_Pin|_74LS_R1_Pin
+                          |MONO2_LED_SARI_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PE9 PE10 */
-  GPIO_InitStruct.Pin = GPIO_PIN_9|GPIO_PIN_10;
+  /*Configure GPIO pins : CIFT_PEDAL_CUT_Pin CIFT_PEDAL_COAG_Pin */
+  GPIO_InitStruct.Pin = CIFT_PEDAL_CUT_Pin|CIFT_PEDAL_COAG_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PD8 PD9 PD10 PD11
-                           PD13 PD14 PD15 PD0
-                           PD1 PD2 PD3 PD4
-                           PD5 PD6 PD7 */
-  GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9|GPIO_PIN_10|GPIO_PIN_11
-                          |GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15|GPIO_PIN_0
-                          |GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_4
-                          |GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7;
+  /*Configure GPIO pins : PWR_ON_R_Pin FAN_R_Pin _74LS_R2_Pin BIPOLAR_ON_R_Pin
+                           MONO2_LED_BEYAZ_Pin MONO1_LED_SARI_Pin RF_GND_EARTH_R_Pin HAND_RELAY_Pin
+                           MONO1_RELAY_Pin LIGASURE_R1_Pin MONO2_RELAY_Pin RF_PWR_RELAY_Pin
+                           RF_BIPOLAR_R_Pin LIGASURE_R2_Pin LIGASURE_R3_Pin */
+  GPIO_InitStruct.Pin = PWR_ON_R_Pin|FAN_R_Pin|_74LS_R2_Pin|BIPOLAR_ON_R_Pin
+                          |MONO2_LED_BEYAZ_Pin|MONO1_LED_SARI_Pin|RF_GND_EARTH_R_Pin|HAND_RELAY_Pin
+                          |MONO1_RELAY_Pin|LIGASURE_R1_Pin|MONO2_RELAY_Pin|RF_PWR_RELAY_Pin
+                          |RF_BIPOLAR_R_Pin|LIGASURE_R2_Pin|LIGASURE_R3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PA8 PA11 PA12 */
-  GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_11|GPIO_PIN_12;
+  /*Configure GPIO pins : CD4051_A_Pin CD4051_B_Pin CD4051_C_Pin */
+  GPIO_InitStruct.Pin = CD4051_A_Pin|CD4051_B_Pin|CD4051_C_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PB4 PB5 PB7 PB8 */
-  GPIO_InitStruct.Pin = GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_7|GPIO_PIN_8;
+  /*Configure GPIO pins : MONO1_KALEM_COAG_Pin MONO2_KALEM_CUT_Pin MONO1_KALEM_CUT_Pin */
+  GPIO_InitStruct.Pin = MONO1_KALEM_COAG_Pin|MONO2_KALEM_CUT_Pin|MONO1_KALEM_CUT_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : MONO2_KALEM_COAG_Pin */
+  GPIO_InitStruct.Pin = MONO2_KALEM_COAG_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(MONO2_KALEM_COAG_GPIO_Port, &GPIO_InitStruct);
+
   /* USER CODE BEGIN MX_GPIO_Init_2 */
+
   /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
-
-// -- Nextion lokal fonksiyonları  -----------------------------
-
-/**
-  * @brief NEXTION İlklendirme Fonksiyonu
-  * @param None
-  * @retval None
-  */
-static void NEXTION_Init(void) 
-{
-	  nextion.pUsart = USART3;
-    nextion.pGpio_port = GPIOB;
-    nextion.rx_pin_num = 11U;
-    nextion.tx_pin_num = 10U;
-    nextion.gpio_af = GPIO_AF7_USART3;
-    nextion.gpio_ahb1_bits = RCC_AHB1ENR_GPIOBEN;
-    nextion.apbx_bit = RCC_APB1ENR_USART3EN;
-    nextion.is_apb2 = 0U;
-    nextion.apb_freq_hz = HAL_RCC_GetPCLK1Freq();
-    nextion.baud_rate = 230400U;
-    nextion.irqn = USART3_IRQn;
-    nextion.nvic_priority = 8U;
-    nextion.ack_timeout_ms = NEXTION_TIMEOUT_MS;
-    (void)nextion_init(&nextion);
-}
 
 /* USER CODE END 4 */
 
@@ -897,7 +855,7 @@ void Error_Handler(void)
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
   __disable_irq();
-  while (1U)
+  while (1)
   {
   }
   /* USER CODE END Error_Handler_Debug */

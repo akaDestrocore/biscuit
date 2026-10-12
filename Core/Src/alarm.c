@@ -10,24 +10,22 @@
  * @date    2026
  */
 
-#include "core.h"
-#include "modules.h"
+#include "genx.h"
 
 /* ============================================================
  * Özel fonksiyon prototipleri
  * ============================================================*/
 static void alarm_tonDegistir(Alarm_Ses_e sesTonu, uint8_t *pDurum);
 
-
 /* ============================================================
  * Genel API
  * ============================================================*/
 
- /**
+/**
   * @brief Çalışma seslerini ve öncelikli alarm seslerini yönetir
   * @retval None
   */
-void alarm_run(void) {
+void alarm_yonet(void) {
     
     alarm_tonDegistir(ALARM_SES_MONO_CUT, &gMonopolarCutSes);
     alarm_tonDegistir(ALARM_SES_MONO_COAG, &gMonopolarCoagSes);
@@ -36,7 +34,7 @@ void alarm_run(void) {
 
     if (1U == gAlarmPlate) {
 
-        HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(SOUND_RELAY_GPIO_Port, SOUND_RELAY_Pin, GPIO_PIN_RESET);
         HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_SET);
         htim9.Instance->PSC = 150U;
         HAL_TIM_PWM_Start(&htim9, TIM_CHANNEL_2);
@@ -50,7 +48,7 @@ void alarm_run(void) {
     }
 
     if (1U == gDusukOncelikAlarm) {
-        HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(SOUND_RELAY_GPIO_Port, SOUND_RELAY_Pin, GPIO_PIN_RESET);
         HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_SET);
         htim9.Instance->PSC = 150U;
         HAL_TIM_PWM_Start(&htim9, TIM_CHANNEL_2);
@@ -71,7 +69,7 @@ void alarm_run(void) {
 
 /**
   * @brief Belirtilen ses tonu için hoparlör durumunu günceller
-  * @param sesTonu Güncellenecek tonun ID
+  * @param sesTonu Güncellenecek tonun ID'si
   * @param pDurum Durum değişkenine işaretçi
   * @retval None
   */
@@ -85,7 +83,7 @@ static void alarm_tonDegistir(Alarm_Ses_e sesTonu, uint8_t *pDurum) {
                 
                 if (sesTonu == gAlarmConfigTable[i].sesTonu) {
                     
-                    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2, GPIO_PIN_SET);
+                    HAL_GPIO_WritePin(SOUND_RELAY_GPIO_Port, SOUND_RELAY_Pin, GPIO_PIN_SET);
                     htim9.Instance->PSC = gAlarmConfigTable[i].PSC;
                     HAL_TIM_PWM_Start(&htim9, TIM_CHANNEL_2);
                     break;
@@ -94,7 +92,7 @@ static void alarm_tonDegistir(Alarm_Ses_e sesTonu, uint8_t *pDurum) {
         }
     } else if (2U == *pDurum) {
         
-        HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(SOUND_RELAY_GPIO_Port, SOUND_RELAY_Pin, GPIO_PIN_RESET);
         HAL_TIM_PWM_Stop(&htim9, TIM_CHANNEL_2);
         *pDurum = 0U;
     }
