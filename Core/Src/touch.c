@@ -726,7 +726,7 @@ static void touch_veriKayitOku(void) {
     }
 
     // BIPOLAR2
-    if(true == bipolar_modEtkinMi(&gBipolar2Coag, BIPOLAR2_COAG_EN_LIGATION)) {
+    if(true == bipolar_modEtkinMi(&gBipolar2Coag, BIPOLAR_SEAL_COAGMODE_LIGATION)) {
         
         if ((gBipolar2Coag.runtime.user_watt > 0U) && (gBipolar2Coag.runtime.user_watt <= 350U)) {
         
