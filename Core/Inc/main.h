@@ -65,6 +65,8 @@ void Error_Handler(void);
 #define VOLUME_1_GPIO_Port GPIOE
 #define BIPOLAR_CUT_R_Pin GPIO_PIN_13
 #define BIPOLAR_CUT_R_GPIO_Port GPIOC
+#define BIPOLAR_TEK_PEDAL_Pin GPIO_PIN_1
+#define BIPOLAR_TEK_PEDAL_GPIO_Port GPIOC
 #define MONO_KORUMA_Pin GPIO_PIN_4
 #define MONO_KORUMA_GPIO_Port GPIOC
 #define MAIN_BOARD_PWM_R_Pin GPIO_PIN_5
@@ -113,6 +115,8 @@ void Error_Handler(void);
 #define RF_GND_EARTH_R_GPIO_Port GPIOD
 #define MONO1_LED_BEYAZ_Pin GPIO_PIN_7
 #define MONO1_LED_BEYAZ_GPIO_Port GPIOC
+#define RF_KALEM_Pin GPIO_PIN_8
+#define RF_KALEM_GPIO_Port GPIOC
 #define CD4051_A_Pin GPIO_PIN_8
 #define CD4051_A_GPIO_Port GPIOA
 #define CD4051_B_Pin GPIO_PIN_11

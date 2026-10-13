@@ -788,6 +788,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
+  /*Configure GPIO pins : BIPOLAR_TEK_PEDAL_Pin RF_KALEM_Pin */
+  GPIO_InitStruct.Pin = BIPOLAR_TEK_PEDAL_Pin|RF_KALEM_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
   /*Configure GPIO pins : VOLUME_2_Pin MONO2_LED_MAVI_Pin MONO1_LED_MAVI_Pin _74LS_R1_Pin
                            MONO2_LED_SARI_Pin */
   GPIO_InitStruct.Pin = VOLUME_2_Pin|MONO2_LED_MAVI_Pin|MONO1_LED_MAVI_Pin|_74LS_R1_Pin
