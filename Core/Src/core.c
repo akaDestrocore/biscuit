@@ -37,6 +37,8 @@ uint8_t gAutoStop2 = 0U;
 uint8_t gBipolar1PedalCift = 0U;
 uint8_t gBipolar2PedalCift = 0U;
 uint8_t gBipolarHand = 0U;
+uint8_t gAutoStopTekPedal = 0U;
+uint8_t gAutoStopCiftPedal = 0U;
 
 // -- Hata bayrakları ------------------------------------------
 uint8_t gMono1Koruma = 0U;

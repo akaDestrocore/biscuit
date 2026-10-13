@@ -59,6 +59,11 @@ typedef enum {
     BIPOLAR_STATE_ACTIVE            = 1U
 } Bipolar_State_e;
 
+typedef enum {
+    BIPOLAR_TRIGGER_PEDAL           = 0U,
+    BIPOLAR_TRIGGER_HAND            = 1U
+} Bipolar_Trigger_e;
+
 /* =========================================================================
  * Yapılar
  * ========================================================================= */
@@ -102,6 +107,7 @@ typedef struct {
     Bipolar_Runtime_t runtime;
 } Bipolar_Handle_t;
 
+
 /* =========================================================================
  * Mod açma/kapama maskeleri
  * ========================================================================= */
@@ -132,6 +138,30 @@ typedef struct {
                             | MODE_BIT(BIPOLAR_SEAL_COAGMODE_LIGATION,     BIPOLAR2_COAG_EN_LIGATION) \
                             | MODE_BIT(BIPOLAR_SEAL_COAGMODE_SEALSURE,     BIPOLAR2_COAG_EN_SEALSURE) \
                             | MODE_BIT(BIPOLAR_SEAL_COAGMODE_TISSUELOCK,   BIPOLAR2_COAG_EN_TISSUELOCK) )
+
+
+/* ================================================================
+ * GPIO okuma makroları
+ * ================================================================*/
+#define BIPOLAR1_CUT_AYAK_BASILI()      ((GPIO_PIN_RESET == HAL_GPIO_ReadPin((GPIOE), (GPIO_PIN_9))) && (gBipolar1PedalCift == 1U))
+#define BIPOLAR1_CUT_AYAK_SERBEST()     ((GPIO_PIN_SET == HAL_GPIO_ReadPin((GPIOE), (GPIO_PIN_9))) && (gBipolar1PedalCift == 1U))
+
+#define BIPOLAR1_COAG_AYAK_BASILI()     (GPIO_PIN_RESET == HAL_GPIO_ReadPin((GPIOE), (GPIO_PIN_10)) && (gBipolar1PedalCift == 1U))
+#define BIPOLAR1_COAG_AYAK_SERBEST()    (GPIO_PIN_SET == HAL_GPIO_ReadPin((GPIOE), (GPIO_PIN_10)) && (gBipolar1PedalCift == 1U))
+
+#define BIPOLAR2_CUT_LIGASURE_AYAK_BASILI()		((GPIO_PIN_RESET == HAL_GPIO_ReadPin((GPIOE), (GPIO_PIN_9))) && (gBipolar2PedalCift == 1U))
+#define BIPOLAR2_CUT_LIGASURE_AYAK_SERBEST()	((GPIO_PIN_SET == HAL_GPIO_ReadPin((GPIOE), (GPIO_PIN_9))) && (gBipolar2PedalCift == 1U))
+
+#define BIPOLAR2_COAG_LIGASURE_AYAK_BASILI()	((GPIO_PIN_RESET == HAL_GPIO_ReadPin((GPIOE), (GPIO_PIN_10))) && (gBipolar2PedalCift == 1U))
+#define BIPOLAR2_COAG_LIGASURE_AYAK_SERBEST()	((GPIO_PIN_SET == HAL_GPIO_ReadPin((GPIOE), (GPIO_PIN_10))) && (gBipolar2PedalCift == 1U))
+
+#define BIPOLAR_TEK_PEDAL_BASILI()      (GPIO_PIN_RESET == HAL_GPIO_ReadPin((GPIOC),  (GPIO_PIN_1)) && (0U == gBipolarHand))
+#define BIPOLAR_TEK_PEDAL_SERBEST()     (GPIO_PIN_SET == HAL_GPIO_ReadPin((GPIOC),  (GPIO_PIN_1)) && (0U == gBipolarHand))
+
+#define BIPOLAR_HAND_BASILI()           ((GPIO_PIN_RESET == HAL_GPIO_ReadPin((GPIOC),  (GPIO_PIN_1))) \
+                                        && (GPIO_PIN_SET == HAL_GPIO_ReadPin((GPIOD), (GPIO_PIN_0))) && (1U == gBipolarHand))
+#define BIPOLAR_HAND_SERBEST()          ((GPIO_PIN_SET == HAL_GPIO_ReadPin((GPIOC),  (GPIO_PIN_1))) \
+                                        && (GPIO_PIN_SET == HAL_GPIO_ReadPin((GPIOD), (GPIO_PIN_0))) && (1U == gBipolarHand))
 
 
 extern Bipolar_Handle_t gBipolar1Cut;

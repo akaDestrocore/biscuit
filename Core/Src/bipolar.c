@@ -484,7 +484,7 @@ static void bipolar_yonetCoag(Bipolar_Handle_t *pH) {
         pBip->yeniden_hesap = false;
         pBip->durum = BIPOLAR_STATE_IDLE;
         genx_serbestBirak(&pBip->genel);
-        HAL_Delay(300U);
+        HAL_Delay(100U);
         (void)NEXTION_sendCmdRetry("tsw 255,1");
     }
 

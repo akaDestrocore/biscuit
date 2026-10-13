@@ -121,7 +121,7 @@ static const Monopolar_Config_t gMono2CutCfg = {
 static const Monopolar_Config_t gMono2CoagCfg = {
     .function = MONOPOLAR_ISLEV_COAG,
     .relay_pin = MONO2_RELAY_Pin,   // PD3
-    .mux_ch = MUX_MONO_CUT,
+    .mux_ch = MUX_MONO_COAG,
     .led_beyaz = { MONO2_LED_BEYAZ_GPIO_Port, MONO2_LED_BEYAZ_Pin },
     .led_aktif = { MONO2_LED_MAVI_GPIO_Port, MONO2_LED_MAVI_Pin },
     .kalem_pin = { MONO2_KALEM_COAG_GPIO_Port, MONO2_KALEM_COAG_Pin },
@@ -459,6 +459,55 @@ bool monopolar_modKontrol(Monopolar_Handle_t *pH) {
     }
 
     return varsayilan;
+}
+
+/**
+  * @brief TIM5 periyot kesmesi: Endo (POLYPECTOMY/PAPILLOTOMES) cut/coag darbe dizisi
+  * @param pHtim Kesmeyi üreten zamanlayıcı
+  * @retval None
+  * @note HAL'ın zayıf tanımını ezen sabit isimli callback (cb ön ekine uyamaz)
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *pHtim) {
+
+    if (TIM5 == pHtim->Instance) {
+
+        Monopolar_Handle_t *pH = gEndoMutex;
+
+        if ((NULL != pH) && (1U == pH->runtime.genel.start)) {
+
+            float cutWatt = gEndoCutWattPol;
+            float coagWatt = gEndoCoagWattPol;
+            uint32_t cutTicks = gEndoCutTicks;
+            uint8_t say = gEndoCutSay;
+            float dacVal;
+
+            say++;
+            if (say <= cutTicks) {
+
+                dacVal = ((0.000022f * cutWatt * cutWatt * cutWatt) - (0.0205f * cutWatt * cutWatt) + (10.25f * cutWatt) + 287.0f);
+                dacVal /= 10.0f;
+
+                genx_dacUygula(dacVal);
+            }
+
+            if (say > cutTicks) {
+                __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 108U);
+                HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+
+                dacVal = ((0.000075f * coagWatt * coagWatt * coagWatt) - (0.0212f * coagWatt * coagWatt) + (3.2617f * coagWatt) + 34.4f);
+
+                genx_dacUygula(dacVal);
+            }
+
+            if (say >= (gEndoCoagTimer + cutTicks)) {
+                
+                say = 0U;
+                HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_1);
+            }
+
+            gEndoCutSay = say;
+        }
+    }
 }
 
 /* ================================================================

@@ -55,8 +55,6 @@ TIM_HandleTypeDef htim9;
 TIM_HandleTypeDef htim13;
 TIM_HandleTypeDef htim14;
 
-UART_HandleTypeDef huart3;
-
 /* USER CODE BEGIN PV */
 static Nextion_Config_t nextion;
 /* USER CODE END PV */
@@ -288,8 +286,8 @@ static void MX_ADC1_Init(void)
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc1.Init.NbrOfConversion = 5;
-  hadc1.Init.DMAContinuousRequests = DISABLE;
-  hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+  hadc1.Init.DMAContinuousRequests = ENABLE;
+  hadc1.Init.EOCSelection = ADC_EOC_SEQ_CONV;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
   {
     Error_Handler();
@@ -299,7 +297,7 @@ static void MX_ADC1_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_0;
   sConfig.Rank = 1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_56CYCLES;
+  sConfig.SamplingTime = ADC_SAMPLETIME_84CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -825,17 +823,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : MONO1_KALEM_COAG_Pin MONO2_KALEM_CUT_Pin MONO1_KALEM_CUT_Pin */
-  GPIO_InitStruct.Pin = MONO1_KALEM_COAG_Pin|MONO2_KALEM_CUT_Pin|MONO1_KALEM_CUT_Pin;
+  /*Configure GPIO pins : MONO1_KALEM_COAG_Pin MONO2_KALEM_COAG_Pin MONO2_KALEM_CUT_Pin MONO1_KALEM_CUT_Pin */
+  GPIO_InitStruct.Pin = MONO1_KALEM_COAG_Pin|MONO2_KALEM_COAG_Pin|MONO2_KALEM_CUT_Pin|MONO1_KALEM_CUT_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : MONO2_KALEM_COAG_Pin */
-  GPIO_InitStruct.Pin = MONO2_KALEM_COAG_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(MONO2_KALEM_COAG_GPIO_Port, &GPIO_InitStruct);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 

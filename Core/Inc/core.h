@@ -225,6 +225,8 @@ extern uint8_t gAutoStop2;
 extern uint8_t gBipolar1PedalCift;
 extern uint8_t gBipolar2PedalCift;
 extern uint8_t gBipolarHand;
+extern uint8_t gAutoStopTekPedal;
+extern uint8_t gAutoStopCiftPedal;
 
 // -- Hata bayrakları ------------------------------------------
 extern uint8_t gMono1Koruma;

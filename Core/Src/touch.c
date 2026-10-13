@@ -11,6 +11,7 @@
  */
 
 #include <string.h>
+#include "bipolar.h"
 #include "genx.h"
 #include "monopolar.h"
 
@@ -40,9 +41,17 @@ static const Get_Eeprom_t gSaveSteps[] = {
     { "get S4_m1_cog_watt.USER_VALUE.val", 	&gMono1Coag.runtime.user_watt,      sizeof(gMono1Coag.runtime.user_watt)    },
     { "get S5_m1_cog_mod.USER_MODE.val",   	&gMono1Coag.runtime.user_mode, 	    sizeof(gMono1Coag.runtime.user_mode)    },
 	{ "get S6_m2_cut_watt.USER_VALUE.val", 	&gMono2Cut.runtime.user_watt, 	    sizeof(gMono2Cut.runtime.user_watt)     },
-	{ "get S7_m2_cut_mod.USER_MODE.val", 	&gMono2Cut.runtime.user_mode,		sizeof(gMono2Cut.runtime.user_mode)     },
+	{ "get S7_m2_cut_mod.USER_MODE.val", 	&gMono2Cut.runtime.user_mode,       sizeof(gMono2Cut.runtime.user_mode)     },
 	{ "get S8_m2_cog_watt.USER_VALUE.val",	&gMono2Coag.runtime.user_watt,	    sizeof(gMono2Coag.runtime.user_watt)    },
 	{ "get S9_m2_cog_mod.USER_MODE.val",	&gMono2Coag.runtime.user_mode,	    sizeof(gMono2Coag.runtime.user_mode)    },
+	{ "get S10_b1_cut_wat.USER_VALUE.val",	&gBipolar1Cut.runtime.user_watt,    sizeof(gBipolar1Cut.runtime.user_watt)  },
+	{ "get S12_b1_cut_mod.USER_MODE.val",	&gBipolar1Cut.runtime.user_mode,	sizeof(gBipolar1Cut.runtime.user_mode)  },
+	{ "get S11_b1_cog_wat.USER_VALUE.val",	&gBipolar1Coag.runtime.user_watt,   sizeof(gBipolar1Coag.runtime.user_watt) },
+	{ "get S13_b1_cog_mod.USER_MODE.val",	&gBipolar1Coag.runtime.user_mode,	sizeof(gBipolar1Coag.runtime.user_mode)	},
+	{ "get S14_b2_cut_wat.USER_VALUE.val",	&gBipolar2Cut.runtime.user_watt,	sizeof(gBipolar2Cut.runtime.user_watt)	},
+	{ "get S16_b2_cut_mod.USER_MODE.val",	&gBipolar2Cut.runtime.user_mode,	sizeof(gBipolar2Cut.runtime.user_mode)	},
+	{ "get S15_b2_cog_wat.USER_VALUE.val",	&gBipolar2Coag.runtime.user_watt,	sizeof(gBipolar2Coag.runtime.user_watt)	},
+	{ "get S17_b2_cog_mod.USER_MODE.val",	&gBipolar2Coag.runtime.user_mode,	sizeof(gBipolar2Coag.runtime.user_mode)	},
     { "get S18_plate_sec.USER_PLATE.val",  	&gPlate,         	                sizeof(gPlate)				            },
     { "get S25_ses_ayar.SES_VERI.val",     	&gSesVeri,       	                sizeof(gSesVeri)			            },
     { "get S31_endo_ayar.CUT_KADEME.val",	&gEndoCutKademe,	                sizeof(gEndoCutKademe)		            },
@@ -697,7 +706,8 @@ static void touch_veriKayitOku(void) {
     touch_modDogrula();
     touch_polGuncelle();
 
-    if(true == bipolar_modEtkinMi(&gBipolar1Coag, BIPOLAR1_COAG_EN_LIGATION)) {
+    // BIPOLAR1
+    if(true == bipolar_modEtkinMi(&gBipolar1Coag, BIPOLAR_SEAL_COAGMODE_LIGATION)) {
         
         if ((gBipolar1Coag.runtime.user_watt > 0U) && (gBipolar1Coag.runtime.user_watt <= 350U)) {
         
@@ -715,9 +725,10 @@ static void touch_veriKayitOku(void) {
         }
     }
 
+    // BIPOLAR2
     if(true == bipolar_modEtkinMi(&gBipolar2Coag, BIPOLAR2_COAG_EN_LIGATION)) {
         
-        if ((gBipolar1Coag.runtime.user_watt > 0U) && (gBipolar1Coag.runtime.user_watt <= 350U)) {
+        if ((gBipolar2Coag.runtime.user_watt > 0U) && (gBipolar2Coag.runtime.user_watt <= 350U)) {
         
             touch_bipolar2CoagModUygula();
         }
@@ -857,7 +868,7 @@ static void touch_bipolar1CoagModUygula(void) {
             if (1U == gBipolar1PedalCift) {
                 
                 gBipolar1PedalCift = 0U;
-                (void)NEXTION_sendCmdRetry("S1_anasayfa.p7.pic=5");
+                (void)NEXTION_sendCmdRetry("S1_anasayfa.p6.pic=5");
             }
             break;
         }
@@ -902,8 +913,8 @@ static void touch_bipolar2CoagModUygula(void) {
             gLigasureStart = 0U;
             gBipolarAutoStop = 0U;
             gAutoStop2 = 0U;
-            gBipolar1PedalCift = 0U;
-            (void)NEXTION_sendCmdRetry("S1_anasayfa.p6.pic=5");
+            gBipolar2PedalCift = 0U;
+            (void)NEXTION_sendCmdRetry("S1_anasayfa.p7.pic=5");
             break;
         }
 
