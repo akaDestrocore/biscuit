@@ -190,7 +190,7 @@ void bipolar_polHesap(Bipolar_Handle_t *pH) {
                 }
 
                 case BIPOLAR_STD_COAGMODE_STOP:
-                case BIPOLAR_STD_COAGMODE_START:
+                case BIPOLAR_STD_COAGMODE_START:{
                 case 5: {
                     limit = 120.0f;
                     break;

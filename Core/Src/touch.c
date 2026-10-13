@@ -918,15 +918,15 @@ static void touch_bipolar2CoagModUygula(void) {
             break;
         }
 
-        case 5: {
+        // case 5: {
             
-            HAL_GPIO_WritePin(HAND_RELAY_GPIO_Port, HAND_RELAY_Pin, GPIO_PIN_RESET);
-            HAL_GPIO_WritePin(LIGASURE_R1_GPIO_Port, LIGASURE_R1_Pin | LIGASURE_R2_Pin | LIGASURE_R3_Pin, GPIO_PIN_RESET);
-            gBipolarHand = 0U;
-            gLigasureStart = 0U;
-            gBipolarAutoStop = 1U;
-            break;
-        }
+        //     HAL_GPIO_WritePin(HAND_RELAY_GPIO_Port, HAND_RELAY_Pin, GPIO_PIN_RESET);
+        //     HAL_GPIO_WritePin(LIGASURE_R1_GPIO_Port, LIGASURE_R1_Pin | LIGASURE_R2_Pin | LIGASURE_R3_Pin, GPIO_PIN_RESET);
+        //     gBipolarHand = 0U;
+        //     gLigasureStart = 0U;
+        //     gBipolarAutoStop = 1U;
+        //     break;
+        // }
 
         case BIPOLAR_SEAL_COAGMODE_LIGATION:
         case BIPOLAR_SEAL_COAGMODE_SEALSURE: {
