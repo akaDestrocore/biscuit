@@ -193,6 +193,8 @@ int main(void)
     monopolar_init();
     bipolar_init();
 
+    selftest();
+
     while (1)
     {
         alarm_yonet();

@@ -25,6 +25,28 @@
 #error "BIPOLAR2 COAG: LIGATION modu kapatildi"
 #endif
 
+Bipolar_Handle_t *gBipolarHandSahibi = NULL;
+
+/* ============================================================
+ * Mod tablosu
+ * ============================================================*/
+
+static const Bipolar_ModeInfo_t gBipolarModeTable[] = {
+    { BIPOLAR_ISLEV_CUT,    BIPOLAR_CUTMODE_CUTTING,            BIPOLAR_TRIGGER_PEDAL,  200U,   185U,   10U,    200U,   0U,     0U,   false },
+    { BIPOLAR_ISLEV_CUT,    BIPOLAR_CUTMODE_SCISSORS,           BIPOLAR_TRIGGER_PEDAL,  200U,   185U,   10U,    200U,   0U,     0U,   false },
+    { BIPOLAR_ISLEV_CUT,    BIPOLAR_CUTMODE_BIVAPO,             BIPOLAR_TRIGGER_PEDAL,  200U,   185U,   10U,    200U,   0U,     0U,   false },
+    { BIPOLAR_ISLEV_CUT,    BIPOLAR_CUTMODE_BIREZO,             BIPOLAR_TRIGGER_PEDAL,  200U,   185U,   10U,    200U,   0U,     0U,   false },
+    { BIPOLAR_ISLEV_COAG,   BIPOLAR_STD_COAGMODE_STANDARD,      BIPOLAR_TRIGGER_PEDAL,  150U,   150U,   10U,    150U,   0U,     0U,   false },
+    { BIPOLAR_ISLEV_COAG,   BIPOLAR_STD_COAGMODE_FORCED,        BIPOLAR_TRIGGER_PEDAL,  150U,   150U,   10U,    150U,   0U,     0U,   false },
+    { BIPOLAR_ISLEV_COAG,   BIPOLAR_STD_COAGMODE_STOP,          BIPOLAR_TRIGGER_PEDAL,  150U,   120U,   10U,    150U,   500U,   400U, false },
+    { BIPOLAR_ISLEV_COAG,   BIPOLAR_STD_COAGMODE_START,         BIPOLAR_TRIGGER_HAND,   150U,   120U,   10U,    150U,   0U,     0U,   false },
+    { BIPOLAR_ISLEV_COAG,   BIPOLAR_SEAL_COAGMODE_LIGATION,     BIPOLAR_TRIGGER_HAND,   350U,   310U,   0U,     0U,     550U,   450U, true  },
+    { BIPOLAR_ISLEV_COAG,   BIPOLAR_SEAL_COAGMODE_SEALSURE,     BIPOLAR_TRIGGER_HAND,   350U,   310U,   0U,     0U,     550U,   450U, true  },
+    { BIPOLAR_ISLEV_COAG,   BIPOLAR_SEAL_COAGMODE_TISSUELOCK,   BIPOLAR_TRIGGER_PEDAL,  350U,   310U,   0U,     0U,     550U,   450U, true  }
+};
+
+#define BIPOLAR_MODE_COUNT ((uint32_t)(sizeof(gBipolarModeTable) / sizeof(gBipolarModeTable[0])))
+
 /* ============================================================
  * Kanal yapılandırmaları
  * ============================================================*/
@@ -33,7 +55,6 @@ static const Bipolar_Config_t gBipolar1CutCfg = {
     .category           = BIPOLAR_CATEGORY_STANDARD,
     .etkin_maske        = BIPOLAR1_CUT_MASK,
     .varsayilan_mod     = BIPOLAR_CUTMODE_CUTTING,
-    .max_watt           = 200U,
     .pWattGetCmd        = "get S10_b1_cut_wat.USER_VALUE.val",
     .pModeGetCmd        = "get S12_b1_cut_mod.USER_MODE.val",
     .pMainSetCmd        = "S1_anasayfa.n6.val=S10_b1_cut_wat.USER_VALUE.val"
@@ -44,7 +65,6 @@ static const Bipolar_Config_t gBipolar1CoagCfg = {
     .category           = BIPOLAR_CATEGORY_STANDARD,
     .etkin_maske        = BIPOLAR1_COAG_MASK,
     .varsayilan_mod     = BIPOLAR_STD_COAGMODE_STANDARD,
-    .max_watt           = 150U,
     .pWattGetCmd        = "get S11_b1_cog_wat.USER_VALUE.val",
     .pModeGetCmd        = "get S13_b1_cog_mod.USER_MODE.val",
     .pMainSetCmd        = "S1_anasayfa.n7.val=S11_b1_cog_wat.USER_VALUE.val"
@@ -55,7 +75,6 @@ static const Bipolar_Config_t gBipolar2CutCfg = {
     .category           = BIPOLAR_CATEGORY_SEAL,
     .etkin_maske        = BIPOLAR2_CUT_MASK,
     .varsayilan_mod     = BIPOLAR_CUTMODE_CUTTING,
-    .max_watt           = 200U,
     .pWattGetCmd        = "get S14_b2_cut_wat.USER_VALUE.val",
     .pModeGetCmd        = "get S16_b2_cut_mod.USER_MODE.val",
     .pMainSetCmd        = "S1_anasayfa.n4.val=S14_b2_cut_wat.USER_VALUE.val"
@@ -66,7 +85,6 @@ static const Bipolar_Config_t gBipolar2CoagCfg = {
     .category           = BIPOLAR_CATEGORY_SEAL,
     .etkin_maske        = BIPOLAR2_COAG_MASK,
     .varsayilan_mod     = BIPOLAR_SEAL_COAGMODE_LIGATION,
-    .max_watt           = 350U,
     .pWattGetCmd        = "get S15_b2_cog_wat.USER_VALUE.val",
     .pModeGetCmd        = "get S17_b2_cog_mod.USER_MODE.val",
     .pMainSetCmd        = "S1_anasayfa.n5.val=S15_b2_cog_wat.USER_VALUE.val"
@@ -112,13 +130,13 @@ Bipolar_Handle_t gBipolar2Coag = {
     }
 };
 
-
 /* ================================================================
  * Özel fonksiyon prototipleri
  * ================================================================*/
 static void bipolar_ledAc(Bipolar_Function_e func, bool aktifMi);
 static void bipolar_yonetCut(Bipolar_Handle_t *pH);
 static void bipolar_yonetCoag(Bipolar_Handle_t *pH);
+static void bipolar_pwrKontrol(const Bipolar_Handle_t *pH);
 
 /* ================================================================
  * Genel API
@@ -167,43 +185,15 @@ bool bipolar_modEtkinMi(const Bipolar_Handle_t *pH, uint32_t modeId) {
 void bipolar_polHesap(Bipolar_Handle_t *pH) {
 
     Bipolar_Runtime_t *pBip = &pH->runtime;
-
+    const Bipolar_ModeInfo_t *pModBilgi = bipolar_modBul(pH->pCfg->function, pH->runtime.user_mode);
     float pol = (float)pBip->user_watt;
-    float limit = 185.0f;
+    float limit = (BIPOLAR_ISLEV_CUT == pH->pCfg->function) ? 185.0f : 130.0f;
 
-    if (BIPOLAR_ISLEV_COAG == pH->pCfg->function) {
-        
-        if (BIPOLAR_CATEGORY_SEAL == pH->pCfg->category) {
-            
-            limit = 310.0f;
-        
-        } else {
-            
-            limit = 130.0f;
-
-            switch (pBip->user_mode) {
-                
-                case BIPOLAR_STD_COAGMODE_STANDARD:
-                case BIPOLAR_STD_COAGMODE_FORCED: {
-                    limit = 150.0f;
-                    break;
-                }
-
-                case BIPOLAR_STD_COAGMODE_STOP:
-                case BIPOLAR_STD_COAGMODE_START: {
-                    limit = 120.0f;
-                    break;
-                }
-
-                default: {
-                    break;
-                }
-            }
-        }
+    if (NULL != pModBilgi) {
+        limit = (float)pModBilgi->pol_limit;
     }
 
     if (pol > limit) {
-        
         pol = limit;
     }
 
@@ -294,6 +284,11 @@ static void bipolar_yonetCut(Bipolar_Handle_t *pH) {
                 }
             }
         }
+    }
+
+    // Besleme gerilimi koruması
+    if ((1U == pBip->genel.start) && (BIPOLAR_STATE_ACTIVE == pBip->durum)) {
+        bipolar_pwrKontrol(pH);
     }
 
     // Başlatma yada yeniden hesap
@@ -422,6 +417,11 @@ static void bipolar_yonetCoag(Bipolar_Handle_t *pH) {
         }
     }
 
+    // Besleme gerilimi koruması
+    if ((1U == pBip->genel.start) && (BIPOLAR_STATE_ACTIVE == pBip->durum)) {
+        bipolar_pwrKontrol(pH);
+    }
+
     // Başlatma yada yeniden hesap
     if ((true == isTrigger) && ((BIPOLAR_STATE_IDLE == pBip->durum) || (true == pBip->yeniden_hesap))) {
         
@@ -489,33 +489,72 @@ static void bipolar_yonetCoag(Bipolar_Handle_t *pH) {
 
     // Autostop
     {
-        bool autostopEtkin;
-        uint32_t highLimit;
-        uint32_t lowLimit;
+        const Bipolar_ModeInfo_t *pModBilgi = bipolar_modBul(pH->pCfg->function, pH->runtime.user_mode);
+        uint32_t highLimit = 0U;
+        uint32_t lowLimit = 0U;
 
-        if (BIPOLAR_CATEGORY_STANDARD == pH->pCfg->category) {
-            autostopEtkin = (1U == gBipolarAutoStop);
-            highLimit = 500U;
-            lowLimit = 400U;
-        } else {
-            autostopEtkin = (1U == gLigasureStart);
-            highLimit = 550U;
-            lowLimit = 450U;
+        if (NULL != pModBilgi) {
+            highLimit = pModBilgi->stop_high;
+            lowLimit = pModBilgi->stop_low;
         }
 
-        if ((1U == pBip->genel.start) && (true == autostopEtkin) && (1U == gLigasurePedal) && (gLigasureWattYaz > highLimit)) {
-            
+        if ((0U != highLimit) && (1U == pBip->genel.start) && (1U == gLigasurePedal) && (gLigasureWattYaz > highLimit)) {
+
             pBip->autostop_etkin = 1U;
         }
 
         if ((1U == pBip->autostop_etkin) && (gLigasureWattYaz < lowLimit)) {
-            
+
             pBip->autostop_etkin = 0U;
             gAutoStop2 = 1U;
             pBip->basma = 0U;
             pBip->birakma = 0U;
             pBip->genel.start = 0U;
             gLigasurePedal = 0U;
+        }
+    }
+}
+
+/**
+  * @brief Mod tablosunda (function, modeId) kombinasyonunu arar
+  * @param func CUT veya COAG
+  * @param modeId Mod değeri
+  * @retval Satır işaretçisi, bulunamazsa NULL
+  */
+const Bipolar_ModeInfo_t *bipolar_modBul(Bipolar_Function_e func, uint32_t modeId) {
+
+    const Bipolar_ModeInfo_t *pMod = NULL;
+
+    for (uint32_t i = 0U; (i < BIPOLAR_MODE_COUNT) && (NULL == pMod); i++) {
+        if ((func == gBipolarModeTable[i].function) && (modeId == gBipolarModeTable[i].modeId)) {
+            pMod = &gBipolarModeTable[i];
+        }
+    }
+
+    return pMod;
+}
+
+/**
+  * @brief Mod tablosundaki aralıkta besleme gerilimi korumasını uygular
+  * @param pH Kanal handle'ı
+  * @retval None
+  */
+static void bipolar_pwrKontrol(const Bipolar_Handle_t *pH) {
+
+    const Bipolar_ModeInfo_t *pModBilgi = bipolar_modBul(pH->pCfg->function, pH->runtime.user_mode);
+    uint32_t watt = pH->runtime.user_watt;
+
+    if ((true == gPwrYeni) && (NULL != pModBilgi) && (0U != pModBilgi->hv_max_watt)) {
+
+        if ((watt >= pModBilgi->hv_min_watt) && (watt <= pModBilgi->hv_max_watt)) {
+
+            if (gHighVolt <= 2U) {
+                gPwrKoruma = 1U;
+            }
+
+            if (gHighVolt < 200U) {
+                gBiPwrKoruma = 1U;
+            }
         }
     }
 }

@@ -75,7 +75,6 @@ typedef struct {
     Bipolar_Category_e category;
     uint32_t etkin_maske;
     uint32_t varsayilan_mod;
-    uint32_t max_watt;
     const char *pWattGetCmd;
     const char *pModeGetCmd;
     const char *pMainSetCmd;
@@ -107,6 +106,21 @@ typedef struct {
     Bipolar_Runtime_t runtime;
 } Bipolar_Handle_t;
 
+/**
+ * @brief Mod başına sabit parametreler
+ */
+typedef struct {
+    Bipolar_Function_e function;
+    uint32_t modeId;
+    Bipolar_Trigger_e trigger;
+    uint32_t max_watt;
+    uint32_t pol_limit;
+    uint32_t hv_min_watt;
+    uint32_t hv_max_watt;
+    uint32_t stop_high; // 0 = autostop yok
+    uint32_t stop_low;
+    bool ligature_mu;
+} Bipolar_ModeInfo_t;
 
 /* =========================================================================
  * Mod açma/kapama maskeleri
@@ -168,6 +182,7 @@ extern Bipolar_Handle_t gBipolar1Cut;
 extern Bipolar_Handle_t gBipolar1Coag;
 extern Bipolar_Handle_t gBipolar2Cut;
 extern Bipolar_Handle_t gBipolar2Coag;
+extern Bipolar_Handle_t *gBipolarHandSahibi;
 
 /* =========================================================================
  * Genel API
@@ -176,6 +191,7 @@ void bipolar_init(void);
 bool bipolar_modEtkinMi(const Bipolar_Handle_t *hbip, uint32_t modeId);
 void bipolar_polHesap(Bipolar_Handle_t *hbip);
 bool bipolar_modKontrol(Bipolar_Handle_t *hbip);
+const Bipolar_ModeInfo_t *bipolar_modBul(Bipolar_Function_e func, uint32_t modeId);
 
 
 #ifdef __cplusplus

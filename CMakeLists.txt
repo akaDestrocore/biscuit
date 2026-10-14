@@ -54,6 +54,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/error.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/input.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/alarm.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/selftest.c"
 )
 
 # Add include paths

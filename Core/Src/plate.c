@@ -23,6 +23,13 @@ void plate_yonet(void) {
     static uint8_t dualToSingle = 0U;
     static uint32_t sonPlate = 0U;
     static uint8_t sonAsiriDirenc = 0xFFU;
+    // static UI_Page_e sonSayfa = UI_PAGE_BOOT;
+
+    // // Ana sayfaya her dönüşte resim yeniden gönderilsin
+    // if ((UI_PAGE_MAIN == gAcikSayfa) && (UI_PAGE_MAIN != sonSayfa)) {
+    //     sonAsiriDirenc = 0xFFU;
+    // }
+    // sonSayfa = gAcikSayfa;
 
     gecikme++;
     

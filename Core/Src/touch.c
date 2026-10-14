@@ -76,8 +76,10 @@ static void touch_modDogrula(void);
 static void touch_bipolarWattOk(Bipolar_Handle_t *pH);
 static void touch_bipolarModOku(Bipolar_Handle_t *pH);
 static void touch_bipolarSayfaDonus(const Bipolar_Handle_t *pH);
-static void touch_bipolar1CoagModUygula(void);
-static void touch_bipolar2CoagModUygula(void);
+static bool touch_bipolarWattKontrol(const Bipolar_Handle_t *pH);
+static void touch_bipolarRoleUygula(void);
+static void touch_bipolarCoagModUygula(Bipolar_Handle_t *pH);
+
 
 /* ============================================================
  * Genel API
@@ -143,6 +145,10 @@ static void touch_basmaOlayi(uint16_t objName) {
         if (PLATE_SINGLE == gPlate) {
             (void)NEXTION_sendCmdRetry("S18_plate_sec.p5.pic=111");
         }
+    }
+
+    if (0 == objName) {
+        return;
     }
 
     switch (objName) {
@@ -305,22 +311,28 @@ static void touch_basmaOlayi(uint16_t objName) {
         }
 
         case S1__BIPOLAR_PEDAL_BUTTON: {
-            
+
             if (1U == gBipolar1PedalCift) {
+                
                 gBipolar1PedalCift = 0U;
                 (void)NEXTION_sendCmdRetry("S1_anasayfa.p6.pic=5");
+                touch_bipolarRoleUygula();
             } else {
+                
+                const Bipolar_ModeInfo_t *pModBilgi;
+
                 gBipolar1PedalCift = 1U;
-                gBipolarAutoStop = (5 == gBipolar1Coag.runtime.user_mode) ? 1U : 0U;
                 (void)NEXTION_sendCmdRetry("S1_anasayfa.p6.pic=4");
-                HAL_GPIO_WritePin(GPIOD, GPIO_PIN_0, GPIO_PIN_RESET);
-                gBipolarHand = 0U;
                 touch_tumPedalKapat(PEDAL_BIP1);
 
-                if (BIPOLAR_STD_COAGMODE_START == gBipolar1Coag.runtime.user_mode) {
-                    gLigasureStart = 0U;
-                    gBipolarAutoStop = 0U;
+                // START gibi hand modu pedalla çalışmaz, STANDARD'a döner
+                pModBilgi = bipolar_modBul(gBipolar1Coag.pCfg->function, gBipolar1Coag.runtime.user_mode);
+
+                if ((NULL != pModBilgi) && (BIPOLAR_TRIGGER_HAND == pModBilgi->trigger) && (false == pModBilgi->ligature_mu)) {
+                    
                     gBipolar1Coag.runtime.user_mode = BIPOLAR_STD_COAGMODE_STANDARD;
+                    touch_polGuncelle();
+                    (void)NEXTION_sendNumRetry(gNumBuff, sizeof(gNumBuff), "S13_b1_cog_mod.USER_MODE.val=", (int16_t)BIPOLAR_STD_COAGMODE_STANDARD);
                     (void)NEXTION_sendCmdRetry("S1_anasayfa.p20.pic=52");
                 }
             }
@@ -330,19 +342,18 @@ static void touch_basmaOlayi(uint16_t objName) {
         case S1__SEAL_PEDAL_BUTTON: {
 
             if (1U == gBipolar2PedalCift) {
+
                 gBipolar2PedalCift = 0U;
                 (void)NEXTION_sendCmdRetry("S1_anasayfa.p7.pic=5");
-                gLigasureStart = 0U;
-                HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2 | GPIO_PIN_6 | GPIO_PIN_7, GPIO_PIN_RESET);
+                touch_bipolarRoleUygula();
+
             } else {
+                
                 gBipolar2PedalCift = 1U;
                 (void)NEXTION_sendCmdRetry("S1_anasayfa.p7.pic=4");
-                gLigasureStart = 1U;
-                HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2 | GPIO_PIN_6 | GPIO_PIN_7, GPIO_PIN_SET);   // ligasure rölesi açık
-                HAL_GPIO_WritePin(GPIOD, GPIO_PIN_0, GPIO_PIN_RESET);
-                gBipolarHand = 0U;
                 touch_tumPedalKapat(PEDAL_BIP2);
             }
+
             break;
         }
 
@@ -480,7 +491,7 @@ static void touch_basmaOlayi(uint16_t objName) {
         case S13__OK_BUTTON: {
             
             touch_bipolarModOku(&gBipolar1Coag);
-            touch_bipolar1CoagModUygula();
+            touch_bipolarCoagModUygula(&gBipolar1Coag);
             touch_bipolarSayfaDonus(&gBipolar1Coag);
             break;
         }
@@ -488,20 +499,20 @@ static void touch_basmaOlayi(uint16_t objName) {
         case S17__OK_BUTTON: {
             
             touch_bipolarModOku(&gBipolar2Coag);
-            touch_bipolar2CoagModUygula();
+            touch_bipolarCoagModUygula(&gBipolar2Coag);
             touch_bipolarSayfaDonus(&gBipolar2Coag);
             break;
         }
 
         case S31__OK_BUTTON: {
+            // Mono2'nin endocut sayfası bu değil
             
-            if ((MONOPOLAR_CUTMODE_POLYPECTOMY == gMono2Cut.runtime.user_mode) || (MONOPOLAR_CUTMODE_PAPILLOTOMES == gMono2Cut.runtime.user_mode)) {
+            if ((MONOPOLAR_CUTMODE_POLYPECTOMY == gMono1Cut.runtime.user_mode) || (MONOPOLAR_CUTMODE_PAPILLOTOMES == gMono1Cut.runtime.user_mode)) {
                 (void)NEXTION_getVarRetry(&gEndoCutKademe, "get S31_endo_ayar.CUT_KADEME.val", sizeof(gEndoCutKademe));
                 (void)NEXTION_getVarRetry(&gEndoCoagKademe, "get S31_endo_ayar.COAG_KADEME.val", sizeof(gEndoCoagKademe));
                 (void)NEXTION_getVarRetry(&gEndoCutSure, "get S31_endo_ayar.CUT_SURE.val", sizeof(gEndoCutSure));
                 (void)NEXTION_getVarRetry(&gEndoCoagSure, "get S31_endo_ayar.COAG_SURE.val", sizeof(gEndoCoagSure));
                 monopolar_endoHesap(&gMono1Cut);
-                monopolar_endoHesap(&gMono2Cut);
                 (void)NEXTION_setPage(UI_PAGE_MAIN);
             }
 
@@ -591,6 +602,10 @@ static void touch_basmaOlayi(uint16_t objName) {
   */
 static void touch_tumPedalKapat(uint8_t haric) {
 
+    if (0U != haric) {
+        gBipolarHandSahibi = NULL;
+    }
+
     if ((PEDAL_MONO1 != haric) && (1U == gMono1Pedal)) {
         gMono1Pedal = 0U;
         (void)NEXTION_sendCmdRetry("S1_anasayfa.p4.pic=6");
@@ -602,22 +617,16 @@ static void touch_tumPedalKapat(uint8_t haric) {
     }
 
     if ((PEDAL_BIP1 != haric) && (1U == gBipolar1PedalCift)) {
-        gBipolarAutoStop = 0U;
         gBipolar1PedalCift = 0U;
         (void)NEXTION_sendCmdRetry("S1_anasayfa.p6.pic=5");
     }
 
-    if ((PEDAL_BIP2 != haric) && ((1U == gBipolar2PedalCift) || (1U == gLigasureStart))) {
+    if ((PEDAL_BIP2 != haric) && (1U == gBipolar2PedalCift)) {
         gBipolar2PedalCift = 0U;
         (void)NEXTION_sendCmdRetry("S1_anasayfa.p7.pic=5");
-        gLigasureStart = 0U;
-        if (BIPOLAR_STD_COAGMODE_START != gBipolar1Coag.runtime.user_mode) {
-            
-            HAL_GPIO_WritePin(HAND_RELAY_GPIO_Port, HAND_RELAY_Pin, GPIO_PIN_RESET);
-        }
-        
-        HAL_GPIO_WritePin(LIGASURE_R1_GPIO_Port, LIGASURE_R1_Pin | LIGASURE_R2_Pin | LIGASURE_R3_Pin, GPIO_PIN_RESET);
     }
+
+    touch_bipolarRoleUygula();
 }
 
 /**
@@ -706,42 +715,13 @@ static void touch_veriKayitOku(void) {
     touch_modDogrula();
     touch_polGuncelle();
 
-    // BIPOLAR1
-    if(true == bipolar_modEtkinMi(&gBipolar1Coag, BIPOLAR_SEAL_COAGMODE_LIGATION)) {
-        
-        if ((gBipolar1Coag.runtime.user_watt > 0U) && (gBipolar1Coag.runtime.user_watt <= 350U)) {
-        
-            touch_bipolar1CoagModUygula();
-        }
-
-    } else if ((gBipolar1Coag.runtime.user_watt > 0U) && (gBipolar1Coag.runtime.user_watt <= 150U)) {
-        
-        HAL_GPIO_WritePin(HAND_RELAY_GPIO_Port, HAND_RELAY_Pin, GPIO_PIN_RESET);
-        gLigasureStart = 0U;
-        gBipolarAutoStop = 0U;
-
-        if ((BIPOLAR_STD_COAGMODE_START == gBipolar1Coag.runtime.user_mode) || (5 == gBipolar1Coag.runtime.user_mode)) {
-            HAL_GPIO_WritePin(LIGASURE_R1_GPIO_Port, LIGASURE_R1_Pin | LIGASURE_R2_Pin | LIGASURE_R3_Pin, GPIO_PIN_RESET);
-        }
+    // Son uygulanan hand sahibi olur
+    if (true == touch_bipolarWattKontrol(&gBipolar1Coag)) {
+        touch_bipolarCoagModUygula(&gBipolar1Coag);
     }
 
-    // BIPOLAR2
-    if(true == bipolar_modEtkinMi(&gBipolar2Coag, BIPOLAR_SEAL_COAGMODE_LIGATION)) {
-        
-        if ((gBipolar2Coag.runtime.user_watt > 0U) && (gBipolar2Coag.runtime.user_watt <= 350U)) {
-        
-            touch_bipolar2CoagModUygula();
-        }
-        
-    } else if ((gBipolar2Coag.runtime.user_watt > 0U) && (gBipolar2Coag.runtime.user_watt <= 150U)) {
-        
-        HAL_GPIO_WritePin(HAND_RELAY_GPIO_Port, HAND_RELAY_Pin, GPIO_PIN_RESET);
-        gLigasureStart = 0U;
-        gBipolarAutoStop = 0U;
-
-        if ((BIPOLAR_STD_COAGMODE_START == gBipolar2Coag.runtime.user_mode) || (5 == gBipolar2Coag.runtime.user_mode)) {
-            HAL_GPIO_WritePin(LIGASURE_R1_GPIO_Port, LIGASURE_R1_Pin | LIGASURE_R2_Pin | LIGASURE_R3_Pin, GPIO_PIN_RESET);
-        }
+    if (true == touch_bipolarWattKontrol(&gBipolar2Coag)) {
+        touch_bipolarCoagModUygula(&gBipolar2Coag);
     }
 
     if ((PLATE_SINGLE != gPlate) && (PLATE_DUAL != gPlate)) {
@@ -812,146 +792,94 @@ static void touch_bipolarModOku(Bipolar_Handle_t *pH) {
   */
 static void touch_bipolarSayfaDonus(const Bipolar_Handle_t *pH) {
 
-    if ((pH->runtime.user_watt > 0U) && (pH->runtime.user_watt <= pH->pCfg->max_watt)) {
+    const Bipolar_ModeInfo_t *pModBilgi = bipolar_modBul(pH->pCfg->function, pH->runtime.user_mode);
+
+    if ((pH->runtime.user_watt > 0U) && (pH->runtime.user_watt <= pModBilgi->max_watt)) {
         (void)NEXTION_setPage(UI_PAGE_MAIN);
     }
 }
 
 /**
-  * @brief Bipolar1 COAG modunun röle/bayrak ayarlarını uygular
-  * @retval None
+  * @brief Bipolar COAG kanalının watt değeri modun sınırı içinde mi
+  * @param pH Kanal handle'ı
+  * @retval true geçerli, false geçersiz
   */
-static void touch_bipolar1CoagModUygula(void) {
+static bool touch_bipolarWattKontrol(const Bipolar_Handle_t *pH) {
 
-    switch (gBipolar1Coag.runtime.user_mode) {
+    const Bipolar_ModeInfo_t *pModBilgi = bipolar_modBul(pH->pCfg->function, pH->runtime.user_mode);
 
-        case BIPOLAR_STD_COAGMODE_STANDARD:
-        case BIPOLAR_STD_COAGMODE_FORCED:{
-            HAL_GPIO_WritePin(HAND_RELAY_GPIO_Port, HAND_RELAY_Pin, GPIO_PIN_RESET);
-            gBipolarHand = 0U;
-            gLigasureStart = 0U;
-            gBipolarAutoStop = 0U;
-            break;
-        }
-
-        case BIPOLAR_STD_COAGMODE_START: {
-            HAL_GPIO_WritePin(HAND_RELAY_GPIO_Port, HAND_RELAY_Pin, GPIO_PIN_SET);
-            HAL_GPIO_WritePin(LIGASURE_R1_GPIO_Port, LIGASURE_R1_Pin | LIGASURE_R2_Pin | LIGASURE_R3_Pin, GPIO_PIN_RESET);
-            gBipolarHand = 1U;
-            gLigasureStart = 0U;
-            gBipolarAutoStop = 0U;
-            gAutoStop2 = 0U;
-            gBipolar1PedalCift = 0U;
-            (void)NEXTION_sendCmdRetry("S1_anasayfa.p6.pic=5");
-            break;
-        }
-
-        case BIPOLAR_STD_COAGMODE_STOP: {
-            HAL_GPIO_WritePin(HAND_RELAY_GPIO_Port, HAND_RELAY_Pin, GPIO_PIN_RESET);
-            HAL_GPIO_WritePin(LIGASURE_R1_GPIO_Port, LIGASURE_R1_Pin | LIGASURE_R2_Pin | LIGASURE_R3_Pin, GPIO_PIN_RESET);
-            gBipolarHand = 0U;
-            gLigasureStart = 0U;
-            gBipolarAutoStop = 1U;
-            break;
-        }
-
-        case BIPOLAR_SEAL_COAGMODE_LIGATION:
-        case BIPOLAR_SEAL_COAGMODE_SEALSURE: {
-
-            gBipolarHand = 1U;
-            gLigasureStart = 0U;
-            HAL_GPIO_WritePin(HAND_RELAY_GPIO_Port, HAND_RELAY_Pin, GPIO_PIN_SET);
-            HAL_GPIO_WritePin(LIGASURE_R1_GPIO_Port, LIGASURE_R1_Pin | LIGASURE_R2_Pin | LIGASURE_R3_Pin, GPIO_PIN_SET);
-            touch_tumPedalKapat(PEDAL_BIP1);
-            
-            if (1U == gBipolar1PedalCift) {
-                
-                gBipolar1PedalCift = 0U;
-                (void)NEXTION_sendCmdRetry("S1_anasayfa.p6.pic=5");
-            }
-            break;
-        }
-
-        case BIPOLAR_SEAL_COAGMODE_TISSUELOCK: {
-            gBipolarHand = 0U;
-            gLigasureStart = 0U;
-            HAL_GPIO_WritePin(HAND_RELAY_GPIO_Port, HAND_RELAY_Pin, GPIO_PIN_RESET);
-            break;
-        }
-
-        default: {
-            break;
-        }
+    if ((NULL == pH) || (NULL == pModBilgi)) {
+        return false;
     }
+
+    return ((pH->runtime.user_watt > 0U) && (pH->runtime.user_watt <= pModBilgi->max_watt));
 }
 
 /**
-  * @brief Bipolar2 (seal) COAG modunun ayarını uygular
+  * @brief Aktif bipolar kanalı (hand sahibi, yoksa seçili pedal) bulur ve bayrakları ona göre ayarlar
   * @retval None
   */
-static void touch_bipolar2CoagModUygula(void) {
+static void touch_bipolarRoleUygula(void) {
 
-    switch (gBipolar2Coag.runtime.user_mode) {
+    const Bipolar_Handle_t *pAktif = NULL;
+    const Bipolar_ModeInfo_t *pModBilgi;
+    bool ligature = false;
+    bool autostop = false;
 
-        case BIPOLAR_STD_COAGMODE_STANDARD:
-        case BIPOLAR_STD_COAGMODE_FORCED: {
+    if (NULL != gBipolarHandSahibi) {
+        pAktif = gBipolarHandSahibi;
+    
+    } else if (1U == gBipolar2PedalCift) {
+        pAktif = &gBipolar2Coag;
+    
+    } else if (1U == gBipolar1PedalCift) {
+        pAktif = &gBipolar1Coag;
+    
+    } else {
+        // aktif kanal yok
+    }
 
-            HAL_GPIO_WritePin(HAND_RELAY_GPIO_Port, HAND_RELAY_Pin, GPIO_PIN_RESET);
-            gBipolarHand = 0U;
-            gLigasureStart = 0U;
-            gBipolarAutoStop = 0U;
-            break;
+    if (NULL != pAktif) {
+        pModBilgi = bipolar_modBul(pAktif->pCfg->function, pAktif->runtime.user_mode);
+
+        if (NULL != pModBilgi) {
+            ligature = pModBilgi->ligature_mu;
+            autostop = (0U != pModBilgi->stop_high);
         }
+    }
 
-        case BIPOLAR_STD_COAGMODE_START: {
+    gBipolarHand = (NULL != gBipolarHandSahibi) ? 1U : 0U;
+    gLigasureStart = (true == ligature) ? 1U : 0U;
+    gBipolarAutoStop = (true == autostop) ? 1U : 0U;
 
-            HAL_GPIO_WritePin(HAND_RELAY_GPIO_Port, HAND_RELAY_Pin, GPIO_PIN_SET);
-            HAL_GPIO_WritePin(LIGASURE_R1_GPIO_Port, LIGASURE_R1_Pin | LIGASURE_R2_Pin | LIGASURE_R3_Pin, GPIO_PIN_RESET);
-            gBipolarHand = 1U;
-            gLigasureStart = 0U;
-            gBipolarAutoStop = 0U;
-            gAutoStop2 = 0U;
-            gBipolar2PedalCift = 0U;
-            (void)NEXTION_sendCmdRetry("S1_anasayfa.p7.pic=5");
-            break;
-        }
+    HAL_GPIO_WritePin(HAND_RELAY_GPIO_Port, HAND_RELAY_Pin, (1U == gBipolarHand) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(LIGASURE_R1_GPIO_Port, LIGASURE_R1_Pin | LIGASURE_R2_Pin | LIGASURE_R3_Pin, (true == ligature) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+}
 
-        case BIPOLAR_STD_COAGMODE_STOP: {
-            
-            HAL_GPIO_WritePin(HAND_RELAY_GPIO_Port, HAND_RELAY_Pin, GPIO_PIN_RESET);
-            HAL_GPIO_WritePin(LIGASURE_R1_GPIO_Port, LIGASURE_R1_Pin | LIGASURE_R2_Pin | LIGASURE_R3_Pin, GPIO_PIN_RESET);
-            gBipolarHand = 0U;
-            gLigasureStart = 0U;
-            gBipolarAutoStop = 1U;
-            break;
-        }
+/**
+  * @brief Kanalın COAG modunu uygular: hand sahipliği, pedal seçimi, röleler, bayraklar
+  * @param pH Kanal handle'ı
+  * @retval None
+  */
+static void touch_bipolarCoagModUygula(Bipolar_Handle_t *pH) {
 
-        case BIPOLAR_SEAL_COAGMODE_LIGATION:
-        case BIPOLAR_SEAL_COAGMODE_SEALSURE: {
+    const Bipolar_ModeInfo_t *pModBilgi = bipolar_modBul(pH->pCfg->function, pH->runtime.user_mode);
 
-            gBipolarHand = 1U;
-            gLigasureStart = 1U;
-            HAL_GPIO_WritePin(HAND_RELAY_GPIO_Port, HAND_RELAY_Pin, GPIO_PIN_SET);
-            HAL_GPIO_WritePin(LIGASURE_R1_GPIO_Port, LIGASURE_R1_Pin | LIGASURE_R2_Pin | LIGASURE_R3_Pin, GPIO_PIN_SET);
-            touch_tumPedalKapat(PEDAL_BIP2);
-            if (1U == gBipolar2PedalCift) {
+    if (NULL != pModBilgi) {
+        gAutoStop2 = 0U;
 
-                gBipolar2PedalCift = 0U;
-                (void)NEXTION_sendCmdRetry("S1_anasayfa.p7.pic=5");
+        if (BIPOLAR_TRIGGER_HAND == pModBilgi->trigger) {
+            // Son uygulanan hand modu sahip olur, tüm pedallar kapanır
+            gBipolarHandSahibi = pH;
+            touch_tumPedalKapat(0U);
+
+        } else {
+
+            if (pH == gBipolarHandSahibi) {
+                gBipolarHandSahibi = NULL;
             }
-            break;
-        }
 
-        case BIPOLAR_SEAL_COAGMODE_TISSUELOCK: {
-            
-            gBipolarHand = 0U;
-            gLigasureStart = 1U;
-            HAL_GPIO_WritePin(HAND_RELAY_GPIO_Port, HAND_RELAY_Pin, GPIO_PIN_RESET);
-            break;
-        }
-
-        default: {
-            break;
+            touch_bipolarRoleUygula();
         }
     }
 }
