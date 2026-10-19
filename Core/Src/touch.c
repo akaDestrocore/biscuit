@@ -10,8 +10,10 @@
  * @date    2026
  */
 
+#include <stdio.h>
 #include <string.h>
 #include "bipolar.h"
+#include "core.h"
 #include "genx.h"
 #include "monopolar.h"
 
@@ -74,7 +76,6 @@ static void touch_sesUygula(uint8_t seviye);
 static void touch_veriKayitOku(void);
 static void touch_modDogrula(void);
 static void touch_bipolarWattOk(Bipolar_Handle_t *pH);
-static void touch_bipolarModOku(Bipolar_Handle_t *pH);
 static void touch_bipolarSayfaDonus(const Bipolar_Handle_t *pH);
 static bool touch_bipolarWattKontrol(const Bipolar_Handle_t *pH);
 static void touch_bipolarRoleUygula(void);
@@ -139,11 +140,11 @@ static void touch_basmaOlayi(uint16_t objName) {
     if (UI_PAGE_PLATE == gAcikSayfa) {
         
         if (PLATE_DUAL == gPlate) {
-            (void)NEXTION_sendCmdRetry("S18_plate_sec.p3.pic=111");
+            (void)genx_sendCmdRetry("S18_plate_sec.p3.pic=111");
         }
 
         if (PLATE_SINGLE == gPlate) {
-            (void)NEXTION_sendCmdRetry("S18_plate_sec.p5.pic=111");
+            (void)genx_sendCmdRetry("S18_plate_sec.p5.pic=111");
         }
     }
 
@@ -156,132 +157,135 @@ static void touch_basmaOlayi(uint16_t objName) {
         // -- Ana sayfadan ayar sayfalarına geçiş -------------------
         case S1__MONO1_CUT_WATT_BUTTON: {
             
-            if ((MONOPOLAR_CUTMODE_POLYPECTOMY == gMono1Cut.runtime.user_mode) || (MONOPOLAR_CUTMODE_PAPILLOTOMES == gMono1Cut.runtime.user_mode)) {
+            if (( (MONOPOLAR_CUTMODE_POLYPECTOMY == gMono1Cut.runtime.user_mode) && (true == monopolar_modEtkinMi(&gMono1Cut, MONOPOLAR_CUTMODE_POLYPECTOMY)) ) \
+                || ((MONOPOLAR_CUTMODE_PAPILLOTOMES == gMono1Cut.runtime.user_mode) && (true == monopolar_modEtkinMi(&gMono1Cut, MONOPOLAR_CUTMODE_PAPILLOTOMES))) ) {
                 
-                (void)NEXTION_setPage(UI_PAGE_MONO1_ENDO);
+                (void)genx_setPage(UI_PAGE_MONO1_ENDO);
+
             } else {
                 
-                (void)NEXTION_setPage(UI_PAGE_MONO1_CUT_WATT);
+                (void)genx_setPage(UI_PAGE_MONO1_CUT_WATT);
             }
             break;
         }
 
         case S1__MONO1_CUT_MODE_BUTTON: {
             
-            (void)NEXTION_setPage(UI_PAGE_MONO1_CUT_MODE);
+            (void)genx_setPage(UI_PAGE_MONO1_CUT_MODE);
             break;
         }
 
         case S1__MONO1_COAG_WATT_BUTTON: {
             
-            (void)NEXTION_setPage(UI_PAGE_MONO1_COAG_WATT);
+            (void)genx_setPage(UI_PAGE_MONO1_COAG_WATT);
             break;
         }
 
         case S1__MONO1_COAG_MODE_BUTTON: {
             
-            (void)NEXTION_setPage(UI_PAGE_MONO1_COAG_MODE);
+            (void)genx_setPage(UI_PAGE_MONO1_COAG_MODE);
             break;
         }
 
         case S1__MONO2_CUT_WATT_BUTTON: {
 
-            if ((MONOPOLAR_CUTMODE_POLYPECTOMY == gMono2Cut.runtime.user_mode) || (MONOPOLAR_CUTMODE_PAPILLOTOMES == gMono2Cut.runtime.user_mode)) {
-                
-                // (void)NEXTION_setPage(UI_PAGE_MONO2_ENDO);
+            if (( (MONOPOLAR_CUTMODE_POLYPECTOMY == gMono2Cut.runtime.user_mode) && (true == monopolar_modEtkinMi(&gMono2Cut, MONOPOLAR_CUTMODE_POLYPECTOMY)) ) \
+                || ((MONOPOLAR_CUTMODE_PAPILLOTOMES == gMono2Cut.runtime.user_mode) && (true == monopolar_modEtkinMi(&gMono2Cut, MONOPOLAR_CUTMODE_PAPILLOTOMES))) ) {
+                 
+                // (void)genx_setPage(UI_PAGE_MONO2_ENDO);
             } else {
                 
-                (void)NEXTION_setPage(UI_PAGE_MONO2_CUT_WATT);
+                (void)genx_setPage(UI_PAGE_MONO2_CUT_WATT);
             }
             break;
         }
 
         case S1__MONO2_CUT_MODE_BUTTON: {
             
-            (void)NEXTION_setPage(UI_PAGE_MONO2_CUT_MODE);
+            (void)genx_setPage(UI_PAGE_MONO2_CUT_MODE);
             break;
         }
 
         case S1__MONO2_COAG_WATT_BUTTON: {
             
-            (void)NEXTION_setPage(UI_PAGE_MONO2_COAG_WATT);
+            (void)genx_setPage(UI_PAGE_MONO2_COAG_WATT);
             break;
         }
 
         case S1__MONO2_COAG_MODE_BUTTON: {
             
-            (void)NEXTION_setPage(UI_PAGE_MONO2_COAG_MODE);
+            (void)genx_setPage(UI_PAGE_MONO2_COAG_MODE);
             break;
         }
 
         case S1__BIPOLAR_CUT_WATT_BUTTON: {
             
-            (void)NEXTION_setPage(UI_PAGE_BIPOLAR1_CUT_WATT);
+            (void)genx_setPage(UI_PAGE_BIPOLAR1_CUT_WATT);
             break;
         }
 
         case S1__BIPOLAR_CUT_MODE_BUTTON: {
             
-            (void)NEXTION_setPage(UI_PAGE_BIPOLAR1_CUT_MODE);
+            (void)genx_setPage(UI_PAGE_BIPOLAR1_CUT_MODE);
             break;
         }
 
         case S1__BIPOLAR_COAG_WATT_BUTTON: {
             
-            (void)NEXTION_setPage(UI_PAGE_BIPOLAR1_COAG_WATT);
+            (void)genx_setPage(UI_PAGE_BIPOLAR1_COAG_WATT);
             break;
         }
 
         case S1__BIPOLAR_COAG_MODE_BUTTON: {
             
-            (void)NEXTION_setPage(UI_PAGE_BIPOLAR1_COAG_MODE);
+            (void)genx_setPage(UI_PAGE_BIPOLAR1_COAG_MODE);
             break;
         }
 
         case S1__SEAL_CUT_WATT_BUTTON: {
             
-            (void)NEXTION_setPage(UI_PAGE_BIPOLAR2_CUT_WATT);
+            (void)genx_setPage(UI_PAGE_BIPOLAR2_CUT_WATT);
             break;
         }
 
         case S1__SEAL_CUT_MODE_BUTTON: {
             
-            (void)NEXTION_setPage(UI_PAGE_BIPOLAR2_CUT_MODE);
+            (void)genx_setPage(UI_PAGE_BIPOLAR2_CUT_MODE);
             break;
         }
 
         case S1__SEAL_COAG_WATT_BUTTON: {
             
-            (void)NEXTION_setPage(UI_PAGE_BIPOLAR2_COAG_WATT);
+            (void)genx_setPage(UI_PAGE_BIPOLAR2_COAG_WATT);
             break;
         }
 
         case S1__SEAL_COAG_MODE_BUTTON: {
             
-            (void)NEXTION_setPage(UI_PAGE_BIPOLAR2_COAG_MODE);
+            (void)genx_setPage(UI_PAGE_BIPOLAR2_COAG_MODE);
             break;
         }
 
         case S1__PLATE_BUTTON: {
             
-            (void)NEXTION_setPage(UI_PAGE_PLATE);
+            (void)genx_setPage(UI_PAGE_PLATE);
             break;
         }
 
         case S1__PROGRAM_FAV_BUTTON:
         case S1__SELECTED_PROG_FIELD: {
             
-            (void)NEXTION_setPage(UI_PAGE_PROGRAM);
+            (void)genx_setPage(UI_PAGE_PROGRAM);
             break;
         }
 
         case S1__LOG_BUTTON: {
-            (void)NEXTION_setPage(UI_PAGE_LOG);
+            (void)genx_setPage(UI_PAGE_LOG);
             break;
         }
 
         case S1__MENU_BUTTON_BUTTON: {
-            (void)NEXTION_setPage(UI_PAGE_MENU_SETTINGS);
+            (void)genx_setPage(UI_PAGE_MENU_SETTINGS);
             break;
         }
 
@@ -289,10 +293,10 @@ static void touch_basmaOlayi(uint16_t objName) {
         case S1__MONO1_PEDAL_BUTTON: {
             if (1U == gMono1Pedal) {
                 gMono1Pedal = 0U;
-                (void)NEXTION_sendCmdRetry("S1_anasayfa.p4.pic=6");
+                (void)genx_sendCmdRetry("S1_anasayfa.p4.pic=6");
             } else {
                 gMono1Pedal = 1U;
-                (void)NEXTION_sendCmdRetry("S1_anasayfa.p4.pic=0");
+                (void)genx_sendCmdRetry("S1_anasayfa.p4.pic=0");
                 touch_tumPedalKapat(PEDAL_MONO1);
             }
             break;
@@ -301,10 +305,10 @@ static void touch_basmaOlayi(uint16_t objName) {
         case S1__MONO2_PEDAL_BUTTON: {
             if (1U == gMono2Pedal) {
                 gMono2Pedal = 0U;
-                (void)NEXTION_sendCmdRetry("S1_anasayfa.p5.pic=6");
+                (void)genx_sendCmdRetry("S1_anasayfa.p5.pic=6");
             } else {
                 gMono2Pedal = 1U;
-                (void)NEXTION_sendCmdRetry("S1_anasayfa.p5.pic=0");
+                (void)genx_sendCmdRetry("S1_anasayfa.p5.pic=0");
                 touch_tumPedalKapat(PEDAL_MONO2);
             }
             break;
@@ -315,14 +319,14 @@ static void touch_basmaOlayi(uint16_t objName) {
             if (1U == gBipolar1PedalCift) {
                 
                 gBipolar1PedalCift = 0U;
-                (void)NEXTION_sendCmdRetry("S1_anasayfa.p6.pic=5");
+                (void)genx_sendCmdRetry("S1_anasayfa.p6.pic=5");
                 touch_bipolarRoleUygula();
             } else {
                 
                 const Bipolar_ModeInfo_t *pModBilgi;
 
                 gBipolar1PedalCift = 1U;
-                (void)NEXTION_sendCmdRetry("S1_anasayfa.p6.pic=4");
+                (void)genx_sendCmdRetry("S1_anasayfa.p6.pic=4");
                 touch_tumPedalKapat(PEDAL_BIP1);
 
                 // START gibi hand modu pedalla çalışmaz, STANDARD'a döner
@@ -332,8 +336,8 @@ static void touch_basmaOlayi(uint16_t objName) {
                     
                     gBipolar1Coag.runtime.user_mode = BIPOLAR_STD_COAGMODE_STANDARD;
                     touch_polGuncelle();
-                    (void)NEXTION_sendNumRetry(gNumBuff, sizeof(gNumBuff), "S13_b1_cog_mod.USER_MODE.val=", (int16_t)BIPOLAR_STD_COAGMODE_STANDARD);
-                    (void)NEXTION_sendCmdRetry("S1_anasayfa.p20.pic=52");
+                    (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), "S13_b1_cog_mod.USER_MODE.val=", (int16_t)BIPOLAR_STD_COAGMODE_STANDARD);
+                    (void)genx_sendCmdRetry("S1_anasayfa.p20.pic=52");
                 }
             }
             break;
@@ -344,13 +348,13 @@ static void touch_basmaOlayi(uint16_t objName) {
             if (1U == gBipolar2PedalCift) {
 
                 gBipolar2PedalCift = 0U;
-                (void)NEXTION_sendCmdRetry("S1_anasayfa.p7.pic=5");
+                (void)genx_sendCmdRetry("S1_anasayfa.p7.pic=5");
                 touch_bipolarRoleUygula();
 
             } else {
                 
                 gBipolar2PedalCift = 1U;
-                (void)NEXTION_sendCmdRetry("S1_anasayfa.p7.pic=4");
+                (void)genx_sendCmdRetry("S1_anasayfa.p7.pic=4");
                 touch_tumPedalKapat(PEDAL_BIP2);
             }
 
@@ -378,7 +382,7 @@ static void touch_basmaOlayi(uint16_t objName) {
         case S18__OK_BUTTON:
         case S20__BACK_BUTTON:
         case S21__BACK_BUTTON: {
-            (void)NEXTION_setPage(UI_PAGE_MAIN);
+            (void)genx_setPage(UI_PAGE_MAIN);
             break;
         }
 
@@ -436,7 +440,7 @@ static void touch_basmaOlayi(uint16_t objName) {
             
             if (true == monopolar_modEtkinMi(&gMono1Cut, MONOPOLAR_CUTMODE_POLYPECTOMY)) {
                 gMono1Cut.runtime.user_mode = MONOPOLAR_CUTMODE_POLYPECTOMY;
-                (void)NEXTION_setPage(UI_PAGE_MONO1_ENDO);
+                (void)genx_setPage(UI_PAGE_MONO1_ENDO);
             }
             break;
         }
@@ -445,7 +449,7 @@ static void touch_basmaOlayi(uint16_t objName) {
             
             if (true == monopolar_modEtkinMi(&gMono1Cut, MONOPOLAR_CUTMODE_PAPILLOTOMES)) {
                 gMono1Cut.runtime.user_mode = MONOPOLAR_CUTMODE_PAPILLOTOMES;
-                (void)NEXTION_setPage(UI_PAGE_MONO1_ENDO);
+                (void)genx_setPage(UI_PAGE_MONO1_ENDO);
             }
             break;
         }
@@ -476,21 +480,54 @@ static void touch_basmaOlayi(uint16_t objName) {
 
         case S12__OK_BUTTON: {
             
-            touch_bipolarModOku(&gBipolar1Cut);
+            (void)genx_getVarRetry(&gBipolar1Cut.runtime.user_mode, gBipolar1Cut.pCfg->pModeGetCmd, sizeof(gBipolar1Cut.runtime.user_mode));
+    
+            if (true == bipolar_modKontrol(&gBipolar1Cut)) {
+                
+                char varsayilanModStr[64];
+                int w = snprintf(varsayilanModStr, sizeof(varsayilanModStr), "%s=", gBipolar1Cut.pCfg->pModeGetCmd);
+
+                if ((w > 0) && ((size_t)w < sizeof(varsayilanModStr))) {
+                    (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), varsayilanModStr, (int16_t)gBipolar1Cut.pCfg->varsayilan_mod);
+                }
+                return;
+            }
             touch_bipolarSayfaDonus(&gBipolar1Cut);
             break;
         }
 
         case S16__OK_BUTTON: {
             
-            touch_bipolarModOku(&gBipolar2Cut);
+            (void)genx_getVarRetry(&gBipolar2Cut.runtime.user_mode, gBipolar2Cut.pCfg->pModeGetCmd, sizeof(gBipolar2Cut.runtime.user_mode));
+    
+            if (true == bipolar_modKontrol(&gBipolar2Cut)) {
+                
+                char varsayilanModStr[64];
+                int w = snprintf(varsayilanModStr, sizeof(varsayilanModStr), "%s=", gBipolar2Cut.pCfg->pModeGetCmd);
+
+                if ((w > 0) && ((size_t)w < sizeof(varsayilanModStr))) {
+                    (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), varsayilanModStr, (int16_t)gBipolar2Cut.pCfg->varsayilan_mod);
+                }
+                return;
+            }
             touch_bipolarSayfaDonus(&gBipolar2Cut);
             break;
         }
 
         case S13__OK_BUTTON: {
             
-            touch_bipolarModOku(&gBipolar1Coag);
+            (void)genx_getVarRetry(&gBipolar1Coag.runtime.user_mode, gBipolar1Coag.pCfg->pModeGetCmd, sizeof(gBipolar1Coag.runtime.user_mode));
+    
+            if (true == bipolar_modKontrol(&gBipolar1Coag)) {
+                
+                char varsayilanModStr[64];
+                int w = snprintf(varsayilanModStr, sizeof(varsayilanModStr), "%s=", gBipolar1Coag.pCfg->pModeGetCmd);
+
+                if ((w > 0) && ((size_t)w < sizeof(varsayilanModStr))) {
+                    (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), varsayilanModStr, (int16_t)gBipolar1Coag.pCfg->varsayilan_mod);
+                }
+                return;
+            }
             touch_bipolarCoagModUygula(&gBipolar1Coag);
             touch_bipolarSayfaDonus(&gBipolar1Coag);
             break;
@@ -498,7 +535,18 @@ static void touch_basmaOlayi(uint16_t objName) {
 
         case S17__OK_BUTTON: {
             
-            touch_bipolarModOku(&gBipolar2Coag);
+            (void)genx_getVarRetry(&gBipolar2Coag.runtime.user_mode, gBipolar2Coag.pCfg->pModeGetCmd, sizeof(gBipolar2Coag.runtime.user_mode));
+    
+            if (true == bipolar_modKontrol(&gBipolar2Coag)) {
+                
+                char varsayilanModStr[64];
+                int w = snprintf(varsayilanModStr, sizeof(varsayilanModStr), "%s=", gBipolar2Coag.pCfg->pModeGetCmd);
+
+                if ((w > 0) && ((size_t)w < sizeof(varsayilanModStr))) {
+                    (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), varsayilanModStr, (int16_t)gBipolar2Coag.pCfg->varsayilan_mod);
+                }
+                return;
+            }
             touch_bipolarCoagModUygula(&gBipolar2Coag);
             touch_bipolarSayfaDonus(&gBipolar2Coag);
             break;
@@ -506,14 +554,16 @@ static void touch_basmaOlayi(uint16_t objName) {
 
         case S31__OK_BUTTON: {
             // Mono2'nin endocut sayfası bu değil
-            
-            if ((MONOPOLAR_CUTMODE_POLYPECTOMY == gMono1Cut.runtime.user_mode) || (MONOPOLAR_CUTMODE_PAPILLOTOMES == gMono1Cut.runtime.user_mode)) {
-                (void)NEXTION_getVarRetry(&gEndoCutKademe, "get S31_endo_ayar.CUT_KADEME.val", sizeof(gEndoCutKademe));
-                (void)NEXTION_getVarRetry(&gEndoCoagKademe, "get S31_endo_ayar.COAG_KADEME.val", sizeof(gEndoCoagKademe));
-                (void)NEXTION_getVarRetry(&gEndoCutSure, "get S31_endo_ayar.CUT_SURE.val", sizeof(gEndoCutSure));
-                (void)NEXTION_getVarRetry(&gEndoCoagSure, "get S31_endo_ayar.COAG_SURE.val", sizeof(gEndoCoagSure));
+            if ( ((MONOPOLAR_CUTMODE_POLYPECTOMY == gMono1Cut.runtime.user_mode) & (true == monopolar_modEtkinMi(&gMono1Cut, MONOPOLAR_CUTMODE_POLYPECTOMY))) \
+                || ((MONOPOLAR_CUTMODE_PAPILLOTOMES == gMono1Cut.runtime.user_mode) & (true == monopolar_modEtkinMi(&gMono1Cut, MONOPOLAR_CUTMODE_PAPILLOTOMES))) ) {
+                (void)genx_getVarRetry(&gEndoCutKademe, "get S31_endo_ayar.CUT_KADEME.val", sizeof(gEndoCutKademe));
+                (void)genx_getVarRetry(&gEndoCoagKademe, "get S31_endo_ayar.COAG_KADEME.val", sizeof(gEndoCoagKademe));
+                (void)genx_getVarRetry(&gEndoCutSure, "get S31_endo_ayar.CUT_SURE.val", sizeof(gEndoCutSure));
+                (void)genx_getVarRetry(&gEndoCoagSure, "get S31_endo_ayar.COAG_SURE.val", sizeof(gEndoCoagSure));
+                #if (0 != MONO1_CUT_EN_POLYPECTOMY) || (0 != MONO1_CUT_EN_PAPILLOTOMES)
                 monopolar_endoHesap(&gMono1Cut);
-                (void)NEXTION_setPage(UI_PAGE_MAIN);
+                #endif
+                (void)genx_setPage(UI_PAGE_MAIN);
             }
 
             break;
@@ -523,27 +573,27 @@ static void touch_basmaOlayi(uint16_t objName) {
         case S18__DUALPLATE_BUTTON: {
             
             gPlate = PLATE_DUAL;
-            (void)NEXTION_sendCmdRetry("S18_plate_sec.p3.pic=111");
-            (void)NEXTION_sendCmdRetry("S18_plate_sec.p5.pic=110");
-            (void)NEXTION_sendCmdRetry("S18_plate_sec.p2.pic=103");
-            (void)NEXTION_sendCmdRetry("S18_plate_sec.j2.val=0");
+            (void)genx_sendCmdRetry("S18_plate_sec.p3.pic=111");
+            (void)genx_sendCmdRetry("S18_plate_sec.p5.pic=110");
+            (void)genx_sendCmdRetry("S18_plate_sec.p2.pic=103");
+            (void)genx_sendCmdRetry("S18_plate_sec.j2.val=0");
             break;
         }
 
         case S18__SINGLEPLATE_BUTTON: {
             
             gPlate = PLATE_SINGLE;
-            (void)NEXTION_sendCmdRetry("S18_plate_sec.p3.pic=110");
-            (void)NEXTION_sendCmdRetry("S18_plate_sec.p5.pic=111");
-            (void)NEXTION_sendCmdRetry("S18_plate_sec.p0.pic=102");
-            (void)NEXTION_sendCmdRetry("S18_plate_sec.j0.val=0");
+            (void)genx_sendCmdRetry("S18_plate_sec.p3.pic=110");
+            (void)genx_sendCmdRetry("S18_plate_sec.p5.pic=111");
+            (void)genx_sendCmdRetry("S18_plate_sec.p0.pic=102");
+            (void)genx_sendCmdRetry("S18_plate_sec.j0.val=0");
             break;
         }
 
         // -- Program yükleme ve ses -------------------------------
         case S21__OK_BUTTON: {
             
-            (void)NEXTION_sendCmdRetry("tsw 255,0");
+            (void)genx_sendCmdRetry("tsw 255,0");
             gVeriKayit = 1U;
             break;
         }
@@ -554,7 +604,7 @@ static void touch_basmaOlayi(uint16_t objName) {
                 gMonopolarCutSes = 1U;
                 gVolumeData++;
                 touch_sesUygula(gVolumeData);
-                (void)NEXTION_sendNumRetry(gNumBuff, sizeof(gNumBuff), "S25_ses_ayar.j0.val=", (int16_t)(gVolumeData * 25U));
+                (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), "S25_ses_ayar.j0.val=", (int16_t)(gVolumeData * 25U));
             }
             break;
         }
@@ -565,14 +615,15 @@ static void touch_basmaOlayi(uint16_t objName) {
                 gMonopolarCutSes = 1U;
                 gVolumeData--;
                 touch_sesUygula(gVolumeData);
-                (void)NEXTION_sendNumRetry(gNumBuff, sizeof(gNumBuff), "S25_ses_ayar.j0.val=", (int16_t)(gVolumeData * 25U));
+                (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), "S25_ses_ayar.j0.val=", (int16_t)(gVolumeData * 25U));
             }
             break;
         }
 
         // -- Hata sayfasından dönüş -------------------------------
         case S29__OK_BUTTON: {
-            
+            gAlarmPlate = 2U;
+            alarm_yonet();
             HAL_Delay(50U);
             gPedalError3 = 0U;
             gPlateError = 0U;
@@ -583,9 +634,9 @@ static void touch_basmaOlayi(uint16_t objName) {
             gMonoPwrKoruma = 0U;
             gPwrKoruma = 0U;
             gPedal2KezError = 0U;
-            (void)NEXTION_setPage(UI_PAGE_MAIN);
+            (void)genx_setPage(UI_PAGE_MAIN);
             HAL_Delay(100U);
-            (void)NEXTION_sendCmdRetry("tsw 255,1");
+            (void)genx_sendCmdRetry("tsw 255,1");
             break;
         }
 
@@ -608,22 +659,22 @@ static void touch_tumPedalKapat(uint8_t haric) {
 
     if ((PEDAL_MONO1 != haric) && (1U == gMono1Pedal)) {
         gMono1Pedal = 0U;
-        (void)NEXTION_sendCmdRetry("S1_anasayfa.p4.pic=6");
+        (void)genx_sendCmdRetry("S1_anasayfa.p4.pic=6");
     }
 
     if ((PEDAL_MONO2 != haric) && (1U == gMono2Pedal)) {
         gMono2Pedal = 0U;
-        (void)NEXTION_sendCmdRetry("S1_anasayfa.p5.pic=6");
+        (void)genx_sendCmdRetry("S1_anasayfa.p5.pic=6");
     }
 
     if ((PEDAL_BIP1 != haric) && (1U == gBipolar1PedalCift)) {
         gBipolar1PedalCift = 0U;
-        (void)NEXTION_sendCmdRetry("S1_anasayfa.p6.pic=5");
+        (void)genx_sendCmdRetry("S1_anasayfa.p6.pic=5");
     }
 
     if ((PEDAL_BIP2 != haric) && (1U == gBipolar2PedalCift)) {
         gBipolar2PedalCift = 0U;
-        (void)NEXTION_sendCmdRetry("S1_anasayfa.p7.pic=5");
+        (void)genx_sendCmdRetry("S1_anasayfa.p7.pic=5");
     }
 
     touch_bipolarRoleUygula();
@@ -636,10 +687,10 @@ static void touch_tumPedalKapat(uint8_t haric) {
   */
 static void touch_monoWattOk(Monopolar_Handle_t *pH) {
 
-    (void)NEXTION_getVarRetry(&pH->runtime.user_watt, pH->pCfg->pWattGetCmd, sizeof(pH->runtime.user_watt));
+    (void)genx_getVarRetry(&pH->runtime.user_watt, pH->pCfg->pWattGetCmd, sizeof(pH->runtime.user_watt));
     touch_polGuncelle();
-    (void)NEXTION_sendCmdRetry(pH->pCfg->pMainSetCmd);
-    (void)NEXTION_setPage(UI_PAGE_MAIN);
+    (void)genx_sendCmdRetry(pH->pCfg->pMainSetCmd);
+    (void)genx_setPage(UI_PAGE_MAIN);
 }
 
 /**
@@ -665,13 +716,23 @@ static void touch_polGuncelle(void) {
   */
 static void touch_monoModOk(Monopolar_Handle_t *pH) {
 
-    (void)NEXTION_getVarRetry(&pH->runtime.user_mode, pH->pCfg->pModeGetCmd, sizeof(pH->runtime.user_mode));
-    (void)monopolar_modKontrol(pH);
+    (void)genx_getVarRetry(&pH->runtime.user_mode, pH->pCfg->pModeGetCmd, sizeof(pH->runtime.user_mode));
+
+    if (true == monopolar_modKontrol(pH)) {
+        
+        char varsayilanModStr[64];
+        int w = snprintf(varsayilanModStr, sizeof(varsayilanModStr), "%s=", pH->pCfg->pModeGetCmd);
+
+        if ((w > 0) && ((size_t)w < sizeof(varsayilanModStr))) {
+            (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), varsayilanModStr, (int16_t)pH->pCfg->varsayilan_mod);
+        }
+        return;
+    }
     
     touch_polGuncelle();
 
     if ((pH->runtime.user_watt > 0U) && (pH->runtime.user_watt <= pH->pCfg->max_watt)) {
-        (void)NEXTION_setPage(UI_PAGE_MAIN);
+        (void)genx_setPage(UI_PAGE_MAIN);
     }
 }
 
@@ -706,10 +767,10 @@ static void touch_veriKayitOku(void) {
 
         ilerleme = (uint8_t)(((uint16_t)(i + 1U) * 100U) / VAR_COUNT);
 
-        (void)NEXTION_sendNumRetry(gNumBuff, sizeof(gNumBuff), "j0.val=", (int16_t)ilerleme);
+        (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), "j0.val=", (int16_t)ilerleme);
     }
 
-    (void)NEXTION_sendCmdRetry("S0_acilma.t1.txt=\"OK\"");
+    (void)genx_sendCmdRetry("S0_acilma.t1.txt=\"OK\"");
 
     // Kayıtlı mod bu kanalda kapalıysa varsayılana dönülür
     touch_modDogrula();
@@ -735,13 +796,15 @@ static void touch_veriKayitOku(void) {
         touch_sesUygula(gVolumeData);
     }
 
+#if (0 != MONO1_CUT_EN_PAPILLOTOMES) || (0 != MONO1_CUT_EN_POLYPECTOMY) || (0 != MONO2_CUT_EN_PAPILLOTOMES) || (0 != MONO2_CUT_EN_POLYPECTOMY)
     monopolar_endoHesap(&gMono1Cut);
     monopolar_endoHesap(&gMono2Cut);
+#endif
 
     HAL_Delay(50U);
     gVeriKayit = 0U;
-    (void)NEXTION_sendCmdRetry("tsw 255,1");
-    (void)NEXTION_setPage(UI_PAGE_MAIN);
+    (void)genx_sendCmdRetry("tsw 255,1");
+    (void)genx_setPage(UI_PAGE_MAIN);
 }
 
 /**
@@ -750,14 +813,37 @@ static void touch_veriKayitOku(void) {
   */
 static void touch_modDogrula(void) {
 
-    (void)monopolar_modKontrol(&gMono1Cut);
-    (void)monopolar_modKontrol(&gMono1Coag);
-    (void)monopolar_modKontrol(&gMono2Cut);
-    (void)monopolar_modKontrol(&gMono2Coag);
-    (void)bipolar_modKontrol(&gBipolar1Cut);
-    (void)bipolar_modKontrol(&gBipolar1Coag);
-    (void)bipolar_modKontrol(&gBipolar2Cut);
-    (void)bipolar_modKontrol(&gBipolar2Coag);
+    if (true == monopolar_modKontrol(&gMono1Cut)) {
+        (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), "S3_m1_cut_mod.USER_MODE.val=", (int16_t)gMono1Cut.pCfg->varsayilan_mod);
+    }
+
+    if (true == monopolar_modKontrol(&gMono1Coag)) {
+        (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), "S5_m1_cog_mod.USER_MODE.val=", (int16_t)gMono1Coag.pCfg->varsayilan_mod);
+    }
+
+    if (true == monopolar_modKontrol(&gMono2Cut)) {
+        (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), "S7_m2_cut_mod.USER_MODE.val=", (int16_t)gMono2Cut.pCfg->varsayilan_mod);
+    }
+
+    if (true == monopolar_modKontrol(&gMono2Coag)) {
+        (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), "S9_m2_cog_mod.USER_MODE.val=", (int16_t)gMono2Coag.pCfg->varsayilan_mod);
+    }
+
+    if (true == bipolar_modKontrol(&gBipolar1Cut)) {
+        (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), "S12_b1_cut_mod.USER_MODE.val=", (int16_t)gBipolar1Cut.pCfg->varsayilan_mod);
+    }
+
+    if (true == bipolar_modKontrol(&gBipolar1Coag)) {
+        (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), "S13_b1_cog_mod.USER_MODE.val=", (int16_t)gBipolar1Coag.pCfg->varsayilan_mod);
+    }
+    
+    if (true == bipolar_modKontrol(&gBipolar2Cut)) {
+        (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), "S16_b2_cut_mod.USER_MODE.val=", (int16_t)gBipolar2Cut.pCfg->varsayilan_mod);
+    }
+
+    if (true == bipolar_modKontrol(&gBipolar2Coag)) {
+        (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), "S17_b2_cog_mod.USER_MODE.val=", (int16_t)gBipolar2Coag.pCfg->varsayilan_mod);
+    }
 }
 
 /**
@@ -767,22 +853,10 @@ static void touch_modDogrula(void) {
   */
 static void touch_bipolarWattOk(Bipolar_Handle_t *pH) {
 
-    (void)NEXTION_getVarRetry(&pH->runtime.user_watt, pH->pCfg->pWattGetCmd, sizeof(pH->runtime.user_watt));
+    (void)genx_getVarRetry(&pH->runtime.user_watt, pH->pCfg->pWattGetCmd, sizeof(pH->runtime.user_watt));
     touch_polGuncelle();
-    (void)NEXTION_sendCmdRetry(pH->pCfg->pMainSetCmd);
-    (void)NEXTION_setPage(UI_PAGE_MAIN);
-}
-
-/**
-  * @brief Bipolar mod sayfası OK
-  * @param pH Kanal handle'ı
-  * @retval None
-  */
-static void touch_bipolarModOku(Bipolar_Handle_t *pH) {
-
-    (void)NEXTION_getVarRetry(&pH->runtime.user_mode, pH->pCfg->pModeGetCmd, sizeof(pH->runtime.user_mode));
-    (void)bipolar_modKontrol(pH);
-    touch_polGuncelle();
+    (void)genx_sendCmdRetry(pH->pCfg->pMainSetCmd);
+    (void)genx_setPage(UI_PAGE_MAIN);
 }
 
 /**
@@ -795,7 +869,7 @@ static void touch_bipolarSayfaDonus(const Bipolar_Handle_t *pH) {
     const Bipolar_ModeInfo_t *pModBilgi = bipolar_modBul(pH->pCfg->function, pH->runtime.user_mode);
 
     if ((pH->runtime.user_watt > 0U) && (pH->runtime.user_watt <= pModBilgi->max_watt)) {
-        (void)NEXTION_setPage(UI_PAGE_MAIN);
+        (void)genx_setPage(UI_PAGE_MAIN);
     }
 }
 

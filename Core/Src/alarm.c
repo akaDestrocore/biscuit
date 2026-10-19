@@ -35,32 +35,61 @@ void alarm_yonet(void) {
     if (1U == gAlarmPlate) {
 
         HAL_GPIO_WritePin(SOUND_RELAY_GPIO_Port, SOUND_RELAY_Pin, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_SET);
-        htim9.Instance->PSC = 150U;
+        HAL_GPIO_WritePin(ALARM_SOUND_R_GPIO_Port, ALARM_SOUND_R_Pin, GPIO_PIN_SET);
+        htim9.Instance->PSC = 160U;
         HAL_TIM_PWM_Start(&htim9, TIM_CHANNEL_2);
-        HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+        alarm_beepBaslat();
     } else if (2U == gAlarmPlate) {
 
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(ALARM_SOUND_R_GPIO_Port, ALARM_SOUND_R_Pin, GPIO_PIN_RESET);
         HAL_TIM_PWM_Stop(&htim9, TIM_CHANNEL_2);
-        HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_1);
+        alarm_beepDurdur();
         gAlarmPlate = 0U;
     }
 
     if (1U == gDusukOncelikAlarm) {
+        HAL_GPIO_WritePin(ALARM_PWM_S_GPIO_Port, ALARM_PWM_S_Pin, GPIO_PIN_SET);
         HAL_GPIO_WritePin(SOUND_RELAY_GPIO_Port, SOUND_RELAY_Pin, GPIO_PIN_RESET);
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_SET);
-        htim9.Instance->PSC = 150U;
+        HAL_GPIO_WritePin(ALARM_SOUND_R_GPIO_Port, ALARM_SOUND_R_Pin, GPIO_PIN_SET);
+        htim9.Instance->PSC = 160U;
         HAL_TIM_PWM_Start(&htim9, TIM_CHANNEL_2);
 
         gDusukAlarmSay++;
         if (17000U == gDusukAlarmSay) {
             gDusukOncelikAlarm = 0U;
             gDusukAlarmSay = 0U;
-            HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(ALARM_PWM_S_GPIO_Port, ALARM_PWM_S_Pin, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(ALARM_SOUND_R_GPIO_Port, ALARM_SOUND_R_Pin, GPIO_PIN_RESET);
             HAL_TIM_PWM_Stop(&htim9, TIM_CHANNEL_2);
         }
     }
+}
+
+/**
+  * @brief Bip / sessizlik desenini başlatır, desen çalışıyorsa bir şey yapmaz
+  * @retval None
+  */
+void alarm_beepBaslat(void) {
+
+    if (false == gBeepAktif)
+    {
+        HAL_TIM_Base_Start_IT(&htim5);
+        gBeepTick = 0U;
+        gBeepAktif = true;
+        HAL_GPIO_WritePin(ALARM_PWM_S_GPIO_Port, ALARM_PWM_S_Pin, GPIO_PIN_SET);
+    }
+}
+
+/**
+  * @brief Deseni durdurur
+  * @retval None
+  */
+void alarm_beepDurdur(void) {
+    
+    gBeepAktif = false;
+    gBeepTick = 0U;
+    HAL_GPIO_WritePin(ALARM_PWM_S_GPIO_Port, ALARM_PWM_S_Pin, GPIO_PIN_RESET);
+    HAL_TIM_Base_Stop_IT(&htim5);
 }
 
 /* ================================================================

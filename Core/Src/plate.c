@@ -23,13 +23,14 @@ void plate_yonet(void) {
     static uint8_t dualToSingle = 0U;
     static uint32_t sonPlate = 0U;
     static uint8_t sonAsiriDirenc = 0xFFU;
-    // static UI_Page_e sonSayfa = UI_PAGE_BOOT;
+    static UI_Page_e sonSayfa = UI_PAGE_BOOT;
 
-    // // Ana sayfaya her dönüşte resim yeniden gönderilsin
-    // if ((UI_PAGE_MAIN == gAcikSayfa) && (UI_PAGE_MAIN != sonSayfa)) {
-    //     sonAsiriDirenc = 0xFFU;
-    // }
-    // sonSayfa = gAcikSayfa;
+    // Ana sayfaya her dönüşte resim yeniden gönderilsin
+    if ((UI_PAGE_MAIN == gAcikSayfa) && (UI_PAGE_MAIN != sonSayfa)) {
+        sonAsiriDirenc = 0xFFU;
+    }
+    
+    sonSayfa = gAcikSayfa;
 
     gecikme++;
     
@@ -125,7 +126,7 @@ void plate_yonet(void) {
 
             if ((UI_PAGE_MAIN == gAcikSayfa) && ((gPlate != sonPlate) || (gPlate100Overresistance != sonAsiriDirenc))) {
                 
-                (void)NEXTION_sendCmdRetry(pKomut);
+                (void)genx_sendCmdRetry(pKomut);
                 sonPlate = gPlate;
                 sonAsiriDirenc = gPlate100Overresistance;
             }
@@ -139,18 +140,18 @@ void plate_yonet(void) {
         if ((1U == gAlarmPlate) && (0U == gPlateError)) {
             
             gPlateError = 1U;
-            (void)NEXTION_setPage(UI_PAGE_ERROR);
+            (void)genx_setPage(UI_PAGE_ERROR);
             
             HAL_Delay(100U);
             
             if (PLATE_DUAL == gPlate) {
-                (void)NEXTION_sendCmdRetry((0U == dualToSingle) ? "t0.txt=\"ERROR-01\"" : "t0.txt=\"ERROR-03\"");
+                (void)genx_sendCmdRetry((0U == dualToSingle) ? "t0.txt=\"ERROR-01\"" : "t0.txt=\"ERROR-03\"");
             }
             
             HAL_Delay(50U);
             
             if (PLATE_SINGLE == gPlate) {
-                (void)NEXTION_sendCmdRetry("t0.txt=\"ERROR-02\"");
+                (void)genx_sendCmdRetry("t0.txt=\"ERROR-02\"");
             }
             HAL_Delay(50U);
         }
@@ -158,7 +159,7 @@ void plate_yonet(void) {
         // Plate seçim sayfası
         if ((UI_PAGE_PLATE == gAcikSayfa) && (0U == gPlateError)) {
             
-            (void)NEXTION_sendNumRetry(gNumBuff, sizeof(gNumBuff), "S18_plate_sec.n0.val=", (int16_t)ohmYaz);
+            (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), "S18_plate_sec.n0.val=", (int16_t)ohmYaz);
             HAL_Delay(10U);
 
             if ((PLATE_DUAL == gPlate) || (PLATE_SINGLE == gPlate)) {
@@ -173,12 +174,12 @@ void plate_yonet(void) {
                 }
 
                 if (ohmPb <= 100U) {
-                    (void)NEXTION_sendNumRetry(gNumBuff, sizeof(gNumBuff), pPbKomut, (int16_t)ohmPb);
+                    (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), pPbKomut, (int16_t)ohmPb);
                 }
 
                 HAL_Delay(1U);
                 
-                (void)NEXTION_sendCmdRetry(pResim);
+                (void)genx_sendCmdRetry(pResim);
 
                 HAL_GPIO_WritePin(PLATE_LED_YESIL_GPIO_Port, PLATE_LED_YESIL_Pin, (1U == gPlate100Overresistance) ? GPIO_PIN_RESET : GPIO_PIN_SET);
                 HAL_GPIO_WritePin(PLATE_LED_KIRMIZI_GPIO_Port, PLATE_LED_KIRMIZI_Pin, (1U == gPlate100Overresistance) ? GPIO_PIN_SET : GPIO_PIN_RESET);

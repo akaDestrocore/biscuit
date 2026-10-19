@@ -50,45 +50,69 @@ static const Bipolar_ModeInfo_t gBipolarModeTable[] = {
 /* ============================================================
  * Kanal yapılandırmaları
  * ============================================================*/
+#if (0 != BIPOLAR1_CUT_MASK)
+
 static const Bipolar_Config_t gBipolar1CutCfg = {
     .function           = BIPOLAR_ISLEV_CUT,
     .category           = BIPOLAR_CATEGORY_STANDARD,
     .etkin_maske        = BIPOLAR1_CUT_MASK,
     .varsayilan_mod     = BIPOLAR_CUTMODE_CUTTING,
-    .pWattGetCmd        = "get S10_b1_cut_wat.USER_VALUE.val",
-    .pModeGetCmd        = "get S12_b1_cut_mod.USER_MODE.val",
+    .pWattGetCmd        = "S10_b1_cut_wat.USER_VALUE.val",
+    .pModeGetCmd        = "S12_b1_cut_mod.USER_MODE.val",
     .pMainSetCmd        = "S1_anasayfa.n6.val=S10_b1_cut_wat.USER_VALUE.val"
 };
+
+#endif /* (0 != BIPOLAR1_CUT_MASK) */
+
+
+#if (0 != BIPOLAR1_COAG_MASK)
 
 static const Bipolar_Config_t gBipolar1CoagCfg = {
     .function           = BIPOLAR_ISLEV_COAG,
     .category           = BIPOLAR_CATEGORY_STANDARD,
     .etkin_maske        = BIPOLAR1_COAG_MASK,
     .varsayilan_mod     = BIPOLAR_STD_COAGMODE_STANDARD,
-    .pWattGetCmd        = "get S11_b1_cog_wat.USER_VALUE.val",
-    .pModeGetCmd        = "get S13_b1_cog_mod.USER_MODE.val",
+    .pWattGetCmd        = "S11_b1_cog_wat.USER_VALUE.val",
+    .pModeGetCmd        = "S13_b1_cog_mod.USER_MODE.val",
     .pMainSetCmd        = "S1_anasayfa.n7.val=S11_b1_cog_wat.USER_VALUE.val"
 };
+
+#endif /* (0 != BIPOLAR1_COAG_MASK) */
+
+
+#if (0 != BIPOLAR2_CUT_MASK)
 
 static const Bipolar_Config_t gBipolar2CutCfg = {
     .function           = BIPOLAR_ISLEV_CUT,
     .category           = BIPOLAR_CATEGORY_SEAL,
     .etkin_maske        = BIPOLAR2_CUT_MASK,
     .varsayilan_mod     = BIPOLAR_CUTMODE_CUTTING,
-    .pWattGetCmd        = "get S14_b2_cut_wat.USER_VALUE.val",
-    .pModeGetCmd        = "get S16_b2_cut_mod.USER_MODE.val",
+    .pWattGetCmd        = "S14_b2_cut_wat.USER_VALUE.val",
+    .pModeGetCmd        = "S16_b2_cut_mod.USER_MODE.val",
     .pMainSetCmd        = "S1_anasayfa.n4.val=S14_b2_cut_wat.USER_VALUE.val"
 };
+
+#endif /* (0 != BIPOLAR2_CUT_MASK) */
+
+
+#if (0 != BIPOLAR2_COAG_MASK)
 
 static const Bipolar_Config_t gBipolar2CoagCfg = {
     .function           = BIPOLAR_ISLEV_COAG,
     .category           = BIPOLAR_CATEGORY_SEAL,
     .etkin_maske        = BIPOLAR2_COAG_MASK,
     .varsayilan_mod     = BIPOLAR_SEAL_COAGMODE_LIGATION,
-    .pWattGetCmd        = "get S15_b2_cog_wat.USER_VALUE.val",
-    .pModeGetCmd        = "get S17_b2_cog_mod.USER_MODE.val",
+    .pWattGetCmd        = "S15_b2_cog_wat.USER_VALUE.val",
+    .pModeGetCmd        = "S17_b2_cog_mod.USER_MODE.val",
     .pMainSetCmd        = "S1_anasayfa.n5.val=S15_b2_cog_wat.USER_VALUE.val"
 };
+
+#endif /* (0 != BIPOLAR2_COAG_MASK) */
+
+/* ============================================================
+ * Handle'lar
+ * ============================================================*/
+#if (0 != BIPOLAR1_CUT_MASK)
 
 Bipolar_Handle_t gBipolar1Cut = {
     .pCfg = &gBipolar1CutCfg,
@@ -100,6 +124,11 @@ Bipolar_Handle_t gBipolar1Cut = {
     }
 };
 
+#endif /* (0 != BIPOLAR1_CUT_MASK) */
+
+
+#if (0 != BIPOLAR1_COAG_MASK)
+
 Bipolar_Handle_t gBipolar1Coag = {
     .pCfg = &gBipolar1CoagCfg,
     .runtime = { 
@@ -109,6 +138,11 @@ Bipolar_Handle_t gBipolar1Coag = {
         .pol = 10.0f 
     }
 };
+
+#endif /* (0 != BIPOLAR1_COAG_MASK) */
+
+
+#if (0 != BIPOLAR2_CUT_MASK)
 
 Bipolar_Handle_t gBipolar2Cut = {
     .pCfg = &gBipolar2CutCfg,
@@ -120,6 +154,11 @@ Bipolar_Handle_t gBipolar2Cut = {
     }
 };
 
+#endif /* (0 != BIPOLAR2_CUT_MASK) */
+
+
+#if (0 != BIPOLAR2_COAG_MASK)
+
 Bipolar_Handle_t gBipolar2Coag = {
     .pCfg = &gBipolar2CoagCfg,
     .runtime = { 
@@ -129,6 +168,9 @@ Bipolar_Handle_t gBipolar2Coag = {
         .pol = 10.0f 
     }
 };
+
+#endif /* (0 != BIPOLAR2_COAG_MASK) */
+
 
 /* ================================================================
  * Özel fonksiyon prototipleri
@@ -148,10 +190,22 @@ static void bipolar_pwrKontrol(const Bipolar_Handle_t *pH);
   */
 void bipolar_init(void) {
 
+#if (0 != BIPOLAR1_CUT_MASK)
     genx_kanalUygula(&gBipolar1Cut.runtime.genel);
+#endif
+
+#if (0 != BIPOLAR1_COAG_MASK)
     genx_kanalUygula(&gBipolar1Coag.runtime.genel);
+#endif
+
+#if (0 != BIPOLAR2_CUT_MASK)
     genx_kanalUygula(&gBipolar2Cut.runtime.genel);
+#endif
+
+#if (0 != BIPOLAR2_COAG_MASK)
     genx_kanalUygula(&gBipolar2Coag.runtime.genel);
+#endif
+
 }
 
 /**
@@ -160,10 +214,22 @@ void bipolar_init(void) {
   */
 void bipolar_yonet(void) {
 
+#if (0 != BIPOLAR1_CUT_MASK)
     bipolar_yonetCut(&gBipolar1Cut);
+#endif
+
+#if (0 != BIPOLAR1_COAG_MASK)
     bipolar_yonetCoag(&gBipolar1Coag);
+#endif
+
+#if (0 != BIPOLAR2_CUT_MASK)
     bipolar_yonetCut(&gBipolar2Cut);
+#endif
+
+#if (0 != BIPOLAR2_COAG_MASK)
     bipolar_yonetCoag(&gBipolar2Coag);
+#endif
+
 }
 
 /**
@@ -207,14 +273,14 @@ void bipolar_polHesap(Bipolar_Handle_t *pH) {
   */
 bool bipolar_modKontrol(Bipolar_Handle_t *pH) {
 
-    bool isCorrected = false;
+    bool varsayilan = false;
 
     if (false == bipolar_modEtkinMi(pH, pH->runtime.user_mode)) {
         pH->runtime.user_mode = pH->pCfg->varsayilan_mod;
-        isCorrected = true;
+        varsayilan = true;
     }
 
-    return isCorrected;
+    return varsayilan;
 }
 
 /* ================================================================
@@ -235,6 +301,7 @@ static void bipolar_ledAc(Bipolar_Function_e func, bool aktifMi) {
     HAL_GPIO_WritePin(BIPOLAR_LED_BEYAZ_GPIO_Port, BIPOLAR_LED_BEYAZ_Pin, (true == aktifMi) ? GPIO_PIN_RESET : GPIO_PIN_SET);
 }
 
+#if (0 != BIPOLAR1_CUT_MASK) || (0 != BIPOLAR2_CUT_MASK)
 /**
   * @brief Bipolar CUT çıkış gücü ölçümü, koruma, başlatma ve durdurma
   * @param pH Kanal handle'ı
@@ -243,7 +310,7 @@ static void bipolar_ledAc(Bipolar_Function_e func, bool aktifMi) {
 static void bipolar_yonetCut(Bipolar_Handle_t *pH) {
 
     Bipolar_Runtime_t *pBip = &pH->runtime;
-    bool isTrigger = (1U == pBip->genel.start) && (false == genx_baskaAktifVarMi(&pBip->genel));
+    bool trigger = (1U == pBip->genel.start) && (false == genx_baskaAktifVarMi(&pBip->genel));
 
     // Çıkış gücü ölçümü ve koruma
     if ((1U == pBip->genel.start) && (UI_PAGE_MAIN == gAcikSayfa)) {
@@ -292,12 +359,12 @@ static void bipolar_yonetCut(Bipolar_Handle_t *pH) {
     }
 
     // Başlatma yada yeniden hesap
-    if ((true == isTrigger) && ((BIPOLAR_STATE_IDLE == pBip->durum) || (true == pBip->yeniden_hesap))) {
+    if ((true == trigger) && ((BIPOLAR_STATE_IDLE == pBip->durum) || (true == pBip->yeniden_hesap))) {
         
         if (0U == genx_sahiplendir(&pBip->genel)) {
             float x;
 
-            (void)NEXTION_sendCmdRetry("tsw 255,0");
+            (void)genx_sendCmdRetry("tsw 255,0");
             genx_bipolarAc(BIPOLAR_MODE_CUT);
 
             if ((0U == pBip->koruma_start) && (pBip->pol > 19.0f)) {
@@ -356,10 +423,13 @@ static void bipolar_yonetCut(Bipolar_Handle_t *pH) {
         pBip->durum = BIPOLAR_STATE_IDLE;
         genx_serbestBirak(&pBip->genel);
         HAL_Delay(300U);
-        (void)NEXTION_sendCmdRetry("tsw 255,1");
+        (void)genx_sendCmdRetry("tsw 255,1");
     }
 }
+#endif /* (0 != BIPOLAR1_CUT_MASK) || (0 != BIPOLAR2_CUT_MASK) */
 
+
+#if (0 != BIPOLAR1_COAG_MASK) || (0 != BIPOLAR2_COAG_MASK)
 /**
   * @brief Bipolar COAG çıkış gücü ölçümü, koruma, başlatma, durdurma, autostop
   * @param pH Kanal handle'ı
@@ -368,7 +438,7 @@ static void bipolar_yonetCut(Bipolar_Handle_t *pH) {
 static void bipolar_yonetCoag(Bipolar_Handle_t *pH) {
 
     Bipolar_Runtime_t *pBip = &pH->runtime;
-    bool isTrigger = (1U == pBip->genel.start) && (false == genx_baskaAktifVarMi(&pBip->genel));
+    bool trigger = (1U == pBip->genel.start) && (false == genx_baskaAktifVarMi(&pBip->genel));
 
     // Çıkış gücü ölçümü ve koruma
     if ((1U == pBip->genel.start) && (UI_PAGE_MAIN == gAcikSayfa)) {
@@ -423,13 +493,13 @@ static void bipolar_yonetCoag(Bipolar_Handle_t *pH) {
     }
 
     // Başlatma yada yeniden hesap
-    if ((true == isTrigger) && ((BIPOLAR_STATE_IDLE == pBip->durum) || (true == pBip->yeniden_hesap))) {
+    if ((true == trigger) && ((BIPOLAR_STATE_IDLE == pBip->durum) || (true == pBip->yeniden_hesap))) {
         
         if (0U == genx_sahiplendir(&pBip->genel)) {
             
             float x;
 
-            (void)NEXTION_sendCmdRetry("tsw 255,0");
+            (void)genx_sendCmdRetry("tsw 255,0");
             genx_bipolarAc(BIPOLAR_MODE_COAG);
 
             if ((0U == pBip->koruma_start) && (20.0f <= pBip->pol)) {
@@ -446,6 +516,7 @@ static void bipolar_yonetCoag(Bipolar_Handle_t *pH) {
                 pBip->formul_ac = 0U;
                 
                 if (10.0f == pBip->pol) {
+
                     pBip->pol = 7.0f;
                 }
 
@@ -455,6 +526,7 @@ static void bipolar_yonetCoag(Bipolar_Handle_t *pH) {
             }
 
             if (2U == pBip->formul_ac) {
+
                 pBip->formul_ac = 0U;
                 x = (float)pBip->koruma_veri;
                 pBip->watt = (0.000004f * x * x * x) - (0.0032f * x * x) + (1.224f * x) + 34.541f;
@@ -466,12 +538,14 @@ static void bipolar_yonetCoag(Bipolar_Handle_t *pH) {
             pBip->durum = BIPOLAR_STATE_ACTIVE;
             pBip->yeniden_hesap = false;
         } else {
+
             pBip->genel.start = 0U;
         }
     }
 
     // Durdurma
     if ((BIPOLAR_STATE_ACTIVE == pBip->durum) && (0U == pBip->genel.start)) {
+        
         genx_dacUygula(0.0f);
         gBipolarCoagSes = 2U;
         HAL_Delay(100U);
@@ -484,7 +558,7 @@ static void bipolar_yonetCoag(Bipolar_Handle_t *pH) {
         pBip->durum = BIPOLAR_STATE_IDLE;
         genx_serbestBirak(&pBip->genel);
         HAL_Delay(100U);
-        (void)NEXTION_sendCmdRetry("tsw 255,1");
+        (void)genx_sendCmdRetry("tsw 255,1");
     }
 
     // Autostop
@@ -514,6 +588,7 @@ static void bipolar_yonetCoag(Bipolar_Handle_t *pH) {
         }
     }
 }
+#endif /* (0 != BIPOLAR1_COAG_MASK) || (0 != BIPOLAR2_COAG_MASK) */
 
 /**
   * @brief Mod tablosunda (function, modeId) kombinasyonunu arar

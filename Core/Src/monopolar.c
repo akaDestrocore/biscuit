@@ -64,81 +64,112 @@
  * Kanal yapılandırmaları
  * ============================================================*/
 
+#if (0 != MONO1_CUT_MASK)
+
 static const Monopolar_Config_t gMono1CutCfg = {
     .function = MONOPOLAR_ISLEV_CUT,
-    .relay_pin = MONO1_RELAY_Pin,   // PD1
+    .relay_pin = MONO1_RELAY_Pin,
     .mux_ch = MUX_MONO_CUT,
-    .led_beyaz = {MONO1_LED_BEYAZ_GPIO_Port, MONO1_LED_BEYAZ_Pin},
-    .led_aktif = { MONO1_LED_SARI_GPIO_Port, MONO1_LED_SARI_Pin },
-    .kalem_pin = { MONO1_KALEM_CUT_GPIO_Port, MONO1_KALEM_CUT_Pin },
-    .pedal_pin = {CIFT_PEDAL_CUT_GPIO_Port, CIFT_PEDAL_CUT_Pin },
+    .led_beyaz = { MONO1_LED_BEYAZ_GPIO_Port, MONO1_LED_BEYAZ_Pin   },
+    .led_aktif = { MONO1_LED_SARI_GPIO_Port, MONO1_LED_SARI_Pin     },
+    .kalem_pin = { MONO1_KALEM_CUT_GPIO_Port, MONO1_KALEM_CUT_Pin   },
+    .pedal_pin = { CIFT_PEDAL_CUT_GPIO_Port, CIFT_PEDAL_CUT_Pin     },
     .pSeciliPedal = &gMono1Pedal,
     .pHataBayrak = &gMono1Koruma,
     .etkin_maske = MONO1_CUT_MASK,
     .varsayilan_mod = MONOPOLAR_CUTMODE_CUT,
     .max_watt = 400U,
-    .pWattGetCmd = "get S2_m1_cut_watt.USER_VALUE.val",
-    .pModeGetCmd = "get S3_m1_cut_mod.USER_MODE.val",
+    .pWattGetCmd = "S2_m1_cut_watt.USER_VALUE.val",
+    .pModeGetCmd = "S3_m1_cut_mod.USER_MODE.val",
     .pMainSetCmd = "S1_anasayfa.n0.val=S2_m1_cut_watt.USER_VALUE.val"
 };
 
+#endif /* (0 != MONO1_CUT_MASK) */
+
+
+#if (0 != MONO1_COAG_MASK)
+
 static const Monopolar_Config_t gMono1CoagCfg = {
     .function = MONOPOLAR_ISLEV_COAG,
-    .relay_pin = MONO1_RELAY_Pin,   // PD1
+    .relay_pin = MONO1_RELAY_Pin,
     .mux_ch = MUX_MONO_COAG,
-    .led_beyaz = { MONO1_LED_BEYAZ_GPIO_Port, MONO1_LED_BEYAZ_Pin },
-    .led_aktif = { MONO1_LED_MAVI_GPIO_Port, MONO1_LED_MAVI_Pin },
+    .led_beyaz = { MONO1_LED_BEYAZ_GPIO_Port, MONO1_LED_BEYAZ_Pin   },
+    .led_aktif = { MONO1_LED_MAVI_GPIO_Port, MONO1_LED_MAVI_Pin     },
     .kalem_pin = { MONO1_KALEM_COAG_GPIO_Port, MONO1_KALEM_COAG_Pin },
-    .pedal_pin = { CIFT_PEDAL_COAG_GPIO_Port, CIFT_PEDAL_COAG_Pin },
+    .pedal_pin = { CIFT_PEDAL_COAG_GPIO_Port, CIFT_PEDAL_COAG_Pin   },
     .pSeciliPedal = &gMono1Pedal,
     .pHataBayrak = &gMono1Koruma,
     .etkin_maske = MONO1_COAG_MASK,
     .varsayilan_mod = MONOPOLAR_COAGMODE_CONTACT,
     .max_watt = 120U,
-    .pWattGetCmd = "get S4_m1_cog_watt.USER_VALUE.val",
-    .pModeGetCmd = "get S5_m1_cog_mod.USER_MODE.val",
+    .pWattGetCmd = "S4_m1_cog_watt.USER_VALUE.val",
+    .pModeGetCmd = "S5_m1_cog_mod.USER_MODE.val",
     .pMainSetCmd = "S1_anasayfa.n1.val=S4_m1_cog_watt.USER_VALUE.val"
 };
 
+#endif /* (0 != MONO1_CUT_MASK) */
+
+
+#if (0 != MONO2_CUT_MASK)
+
 static const Monopolar_Config_t gMono2CutCfg = {
     .function = MONOPOLAR_ISLEV_CUT,
-    .relay_pin = MONO2_RELAY_Pin,   // PD3
+    .relay_pin = MONO2_RELAY_Pin,
     .mux_ch = MUX_MONO_CUT,
-    .led_beyaz = { MONO2_LED_BEYAZ_GPIO_Port, MONO2_LED_BEYAZ_Pin },
-    .led_aktif = { MONO2_LED_SARI_GPIO_Port, MONO2_LED_SARI_Pin },
-    .kalem_pin = { MONO2_KALEM_CUT_GPIO_Port, MONO2_KALEM_CUT_Pin },
-    .pedal_pin = { CIFT_PEDAL_CUT_GPIO_Port, CIFT_PEDAL_CUT_Pin },
+    .led_beyaz = { MONO2_LED_BEYAZ_GPIO_Port, MONO2_LED_BEYAZ_Pin   },
+    .led_aktif = { MONO2_LED_SARI_GPIO_Port, MONO2_LED_SARI_Pin     },
+    .kalem_pin = { MONO2_KALEM_CUT_GPIO_Port, MONO2_KALEM_CUT_Pin   },
+    .pedal_pin = { CIFT_PEDAL_CUT_GPIO_Port, CIFT_PEDAL_CUT_Pin     },
     .pSeciliPedal = &gMono2Pedal,
     .pHataBayrak = &gMono2Koruma,
     .etkin_maske = MONO2_CUT_MASK,
     .varsayilan_mod = MONOPOLAR_CUTMODE_CUT,
     .max_watt = 400U,
-    .pWattGetCmd = "get S6_m2_cut_watt.USER_VALUE.val",
-    .pModeGetCmd = "get S7_m2_cut_mod.USER_MODE.val",
+    .pWattGetCmd = "S6_m2_cut_watt.USER_VALUE.val",
+    .pModeGetCmd = "S7_m2_cut_mod.USER_MODE.val",
     .pMainSetCmd = "S1_anasayfa.n2.val=S6_m2_cut_watt.USER_VALUE.val"
 };
 
+#endif /* (0 != MONO2_CUT_MASK) */
+
+
+#if (0 != MONO2_COAG_MASK)
+
 static const Monopolar_Config_t gMono2CoagCfg = {
     .function = MONOPOLAR_ISLEV_COAG,
-    .relay_pin = MONO2_RELAY_Pin,   // PD3
+    .relay_pin = MONO2_RELAY_Pin,
     .mux_ch = MUX_MONO_COAG,
-    .led_beyaz = { MONO2_LED_BEYAZ_GPIO_Port, MONO2_LED_BEYAZ_Pin },
-    .led_aktif = { MONO2_LED_MAVI_GPIO_Port, MONO2_LED_MAVI_Pin },
+    .led_beyaz = { MONO2_LED_BEYAZ_GPIO_Port, MONO2_LED_BEYAZ_Pin   },
+    .led_aktif = { MONO2_LED_MAVI_GPIO_Port, MONO2_LED_MAVI_Pin     },
     .kalem_pin = { MONO2_KALEM_COAG_GPIO_Port, MONO2_KALEM_COAG_Pin },
-    .pedal_pin = { CIFT_PEDAL_COAG_GPIO_Port, CIFT_PEDAL_COAG_Pin },
+    .pedal_pin = { CIFT_PEDAL_COAG_GPIO_Port, CIFT_PEDAL_COAG_Pin   },
     .pSeciliPedal = &gMono2Pedal,
     .pHataBayrak = &gMono2Koruma,
     .etkin_maske = MONO2_COAG_MASK,
     .varsayilan_mod = MONOPOLAR_COAGMODE_CONTACT,
     .max_watt = 120U,
-    .pWattGetCmd = "get S8_m2_cog_watt.USER_VALUE.val",
-    .pModeGetCmd = "get S9_m2_cog_mod.USER_MODE.val",
+    .pWattGetCmd = "S8_m2_cog_watt.USER_VALUE.val",
+    .pModeGetCmd = "S9_m2_cog_mod.USER_MODE.val",
     .pMainSetCmd = "S1_anasayfa.n3.val=S8_m2_cog_watt.USER_VALUE.val"
 };
+
+#endif /* (0 != MONO2_COAG_MASK) */
+
+/* ============================================================
+ * TIM5 (endocut)
+ * ============================================================*/
+volatile uint8_t gEndoCutSay = 0U;
+Monopolar_Handle_t * volatile gEndoMutex = NULL;
+volatile float gEndoCutWattPol = 50.0f;
+volatile float gEndoCoagWattPol = 20.0f;
+volatile uint32_t gEndoCutTicks = 1U; // 1 tick = 10 ms
+volatile uint16_t gEndoCoagTimer = 1U;
 
 /* ============================================================
  * Handle'lar
  * ============================================================*/
+#if (0 != MONO1_CUT_MASK)
+
 Monopolar_Handle_t gMono1Cut = {
     .pCfg = &gMono1CutCfg,
     .runtime = {
@@ -148,14 +179,24 @@ Monopolar_Handle_t gMono1Cut = {
     }
 };
 
+#endif /* (0 != MONO1_CUT_MASK) */
+
+
+#if (0 != MONO1_COAG_MASK)
+
 Monopolar_Handle_t gMono1Coag = {
     .pCfg = &gMono1CoagCfg,
-    .runtime = { 
+    .runtime = {
         .user_watt = 10U,
         .user_mode = MONOPOLAR_COAGMODE_CONTACT,
         .pol = 10.0f
     }
 };
+
+#endif /* (0 != MONO1_COAG_MASK) */
+
+
+#if (0 != MONO2_CUT_MASK)
 
 Monopolar_Handle_t gMono2Cut = {
     .pCfg = &gMono2CutCfg,
@@ -166,24 +207,21 @@ Monopolar_Handle_t gMono2Cut = {
     }
 };
 
+#endif /* (0 != MONO2_CUT_MASK) */
+
+
+#if (0 != MONO2_COAG_MASK)
+
 Monopolar_Handle_t gMono2Coag = {
     .pCfg = &gMono2CoagCfg,
-    .runtime   = { 
-        .user_watt = 10U, 
-        .user_mode = MONOPOLAR_COAGMODE_CONTACT, 
-        .pol = 10.0f 
+    .runtime = {
+        .user_watt = 10U,
+        .user_mode = MONOPOLAR_COAGMODE_CONTACT,
+        .pol = 10.0f
     }
 };
 
-/* ============================================================
- * TIM5 (endocut)
- * ============================================================*/
-static volatile uint8_t gEndoCutSay = 0U;
-static Monopolar_Handle_t * volatile gEndoMutex = NULL;
-static volatile float gEndoCutWattPol = 50.0f;
-static volatile float gEndoCoagWattPol = 20.0f;
-static volatile uint32_t gEndoCutTicks = 1U; // 1 = 0.01 saniye
-static volatile uint16_t gEndoCoagTimer = 1U;
+#endif /* (0 != MONO1_COAG_MASK) */
 
 /* ============================================================
  * Özel fonksiyon prototipleri
@@ -194,16 +232,38 @@ static bool monopolar_cikisBaslat(Monopolar_Handle_t *pH, uint16_t pwmCCR);
 static void monopolar_aktiflestir(Monopolar_Handle_t *pH);
 static void monopolar_ledAc(const Monopolar_Config_t *pCfg, bool aktifMi);
 static void monopolar_stopCut(Monopolar_Handle_t *pH);
-static void monopolar_cutBlend1(Monopolar_Handle_t *pH);
-static void monopolar_cutBlend2(Monopolar_Handle_t *pH);
-static void monopolar_cutBlend3(Monopolar_Handle_t *pH);
-static void monopolar_cutEndo(Monopolar_Handle_t *pH);
+
 static void monopolar_yonetCoag(Monopolar_Handle_t *pH);
 static void monopolar_coagContact(Monopolar_Handle_t *pH);
-static void monopolar_coagSpray1(Monopolar_Handle_t *pH);
-static void monopolar_coagSpray2(Monopolar_Handle_t *pH);
-static void monopolar_coagSpray3(Monopolar_Handle_t *pH);
 static void monopolar_stopCoag(Monopolar_Handle_t *pH);
+
+#if (0 != MONO1_CUT_EN_BLEND1) || (0 != MONO2_CUT_EN_BLEND1)
+    static void monopolar_cutBlend1(Monopolar_Handle_t *pH);
+#endif
+
+#if (0 != MONO1_CUT_EN_BLEND2) || (0 != MONO2_CUT_EN_BLEND2)
+    static void monopolar_cutBlend2(Monopolar_Handle_t *pH);
+#endif
+
+#if (0 != MONO1_CUT_EN_BLEND3) || (0 != MONO2_CUT_EN_BLEND3)
+    static void monopolar_cutBlend3(Monopolar_Handle_t *pH);
+#endif
+
+#if (0 != MONO1_CUT_EN_POLYPECTOMY) || (0 != MONO1_CUT_EN_PAPILLOTOMES) || (0 != MONO2_CUT_EN_POLYPECTOMY) || (0 != MONO2_CUT_EN_PAPILLOTOMES)
+    static void monopolar_cutEndo(Monopolar_Handle_t *pH);
+#endif
+
+#if (0 != MONO1_COAG_EN_SPRAY1) || (0 != MONO2_COAG_EN_SPRAY1)
+    static void monopolar_coagSpray1(Monopolar_Handle_t *pH);
+#endif
+
+#if (0 != MONO1_COAG_EN_SPRAY2) || (0 != MONO2_COAG_EN_SPRAY2)
+    static void monopolar_coagSpray2(Monopolar_Handle_t *pH);
+#endif
+
+#if (0 != MONO1_COAG_EN_SPRAY3) || (0 != MONO2_COAG_EN_SPRAY3)
+    static void monopolar_coagSpray3(Monopolar_Handle_t *pH);
+#endif
 
 /* ============================================================
  * Genel API
@@ -215,10 +275,22 @@ static void monopolar_stopCoag(Monopolar_Handle_t *pH);
   */
 void monopolar_init(void) {
 
+#if (0 != MONO1_CUT_MASK)
     genx_kanalUygula(&gMono1Cut.runtime.genel);
+#endif
+
+#if (0 != MONO1_COAG_MASK)
     genx_kanalUygula(&gMono1Coag.runtime.genel);
+#endif
+
+#if (0 != MONO2_CUT_MASK)
     genx_kanalUygula(&gMono2Cut.runtime.genel);
+#endif
+
+#if (0 != MONO2_COAG_MASK)
     genx_kanalUygula(&gMono2Coag.runtime.genel);
+#endif
+
 }
 
 /**
@@ -227,10 +299,22 @@ void monopolar_init(void) {
   */
 void monopolar_yonet(void) {
 
+#if (0 != MONO1_CUT_MASK)
     monopolar_yonetCut(&gMono1Cut);
+#endif
+
+#if (0 != MONO1_COAG_MASK)
     monopolar_yonetCoag(&gMono1Coag);
+#endif
+
+#if (0 != MONO2_CUT_MASK)
     monopolar_yonetCut(&gMono2Cut);
+#endif
+
+#if (0 != MONO2_COAG_MASK)
     monopolar_yonetCoag(&gMono2Coag);
+#endif
+
 }
 
 /**
@@ -387,6 +471,8 @@ void monopolar_polHesap(Monopolar_Handle_t *pH) {
     pRt->pol = pol;
 }
 
+
+#if (0 != MONO1_CUT_EN_POLYPECTOMY) || (0 != MONO1_CUT_EN_PAPILLOTOMES)
 /**
   * @brief Endo ayarlarını TIM5 kesmesinin kullandığı değerlere çevirir
   * @param pH Kanal handle'ı
@@ -442,6 +528,8 @@ void monopolar_endoHesap(const Monopolar_Handle_t *pH) {
         gEndoCoagTimer = (uint16_t)(gEndoCoagSure * 10U);
     }
 }
+#endif /* (0 != MONO1_CUT_EN_POLYPECTOMY) || (0 != MONO1_CUT_EN_PAPILLOTOMES) */
+
 
 /**
   * @brief Kayıtlı mod bu kanalda kapalıysa geri dönüş moduna çevirir
@@ -461,59 +549,12 @@ bool monopolar_modKontrol(Monopolar_Handle_t *pH) {
     return varsayilan;
 }
 
-/**
-  * @brief TIM5 periyot kesmesi: Endo (POLYPECTOMY/PAPILLOTOMES) cut/coag darbe dizisi
-  * @param pHtim Kesmeyi üreten zamanlayıcı
-  * @retval None
-  * @note HAL'ın zayıf tanımını ezen sabit isimli callback (cb ön ekine uyamaz)
-  */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *pHtim) {
-
-    if (TIM5 == pHtim->Instance) {
-
-        Monopolar_Handle_t *pH = gEndoMutex;
-
-        if ((NULL != pH) && (1U == pH->runtime.genel.start)) {
-
-            float cutWatt = gEndoCutWattPol;
-            float coagWatt = gEndoCoagWattPol;
-            uint32_t cutTicks = gEndoCutTicks;
-            uint8_t say = gEndoCutSay;
-            float dacVal;
-
-            say++;
-            if (say <= cutTicks) {
-
-                dacVal = ((0.000022f * cutWatt * cutWatt * cutWatt) - (0.0205f * cutWatt * cutWatt) + (10.25f * cutWatt) + 287.0f);
-                dacVal /= 10.0f;
-
-                genx_dacUygula(dacVal);
-            }
-
-            if (say > cutTicks) {
-                __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 108U);
-                HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
-
-                dacVal = ((0.000075f * coagWatt * coagWatt * coagWatt) - (0.0212f * coagWatt * coagWatt) + (3.2617f * coagWatt) + 34.4f);
-
-                genx_dacUygula(dacVal);
-            }
-
-            if (say >= (gEndoCoagTimer + cutTicks)) {
-                
-                say = 0U;
-                HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_1);
-            }
-
-            gEndoCutSay = say;
-        }
-    }
-}
 
 /* ================================================================
  * Yardımcı fonksiyonlar
  * ================================================================*/
 
+#if (0 != MONO1_CUT_MASK) || (0 != MONO2_CUT_MASK)
 /**
   * @brief Start bayrağına göre mod fonksiyonunu veya durdurmayı çağırır
   * @param pH Kanal handle'ı
@@ -542,29 +583,49 @@ static void monopolar_yonetCut(Monopolar_Handle_t *pH) {
 
                 case MONOPOLAR_CUTMODE_BLEND1: {
                     
+                    #if (0 != MONO1_CUT_EN_BLEND1) || (0 != MONO2_CUT_EN_BLEND1)
+
                     monopolar_cutBlend1(pH);
                     pwrOkundu = true;
+
+                    #endif
+
                     break;
                 }
 
                 case MONOPOLAR_CUTMODE_BLEND2: {
                     
+                    #if (0 != MONO1_CUT_EN_BLEND2) || (0 != MONO2_CUT_EN_BLEND2)
+                    
                     monopolar_cutBlend2(pH);
                     pwrOkundu = true;
+                    
+                    #endif
+
                     break;
                 }
 
                 case MONOPOLAR_CUTMODE_BLEND3: {
+
+                    #if (0 != MONO1_CUT_EN_BLEND3) || (0 != MONO2_CUT_EN_BLEND3)
                     
                     monopolar_cutBlend3(pH);
                     pwrOkundu = true;
+                    
+                    #endif
+                    
                     break;
                 }
 
                 case MONOPOLAR_CUTMODE_POLYPECTOMY:
                 case MONOPOLAR_CUTMODE_PAPILLOTOMES: {
+
+                    #if (0 != MONO1_CUT_EN_PAPILLOTOMES) || (0 != MONO1_CUT_EN_POLYPECTOMY) || (0 != MONO2_CUT_EN_PAPILLOTOMES) || (0 != MONO2_CUT_EN_POLYPECTOMY)
                     
                     monopolar_cutEndo(pH);
+                    
+                    #endif
+                    
                     break;
                 }
 
@@ -594,7 +655,10 @@ static void monopolar_yonetCut(Monopolar_Handle_t *pH) {
         monopolar_stopCut(pH);
     }
 }
+#endif /* (0 != MONO1_CUT_MASK) || (0 != MONO2_CUT_MASK) */
 
+
+#if (0 != MONO1_CUT_EN_CUT) || (0 != MONO2_CUT_EN_CUT)
 /**
   * @brief CUT/RESECTION1/RESECTION2 başlatma ve çıkış gücü izleme
   * @param pH Kanal handle'ı
@@ -651,7 +715,10 @@ static void monopolar_cutCut(Monopolar_Handle_t *pH) {
         }
     }
 }
+#endif /* (0 != MONO1_CUT_EN_CUT) || (0 != MONO2_CUT_EN_CUT) */
 
+
+#if (0 != MONO1_CUT_MASK) || (0 != MONO1_COAG_MASK) || (0 != MONO2_CUT_MASK) || (0 != MONO2_COAG_MASK)
 /**
   * @brief Çıkış sahipliğini alır ve kanalı donanımsal olarak açar
   * @param pH Kanal handle'ı
@@ -665,7 +732,7 @@ static bool monopolar_cikisBaslat(Monopolar_Handle_t *pH, uint16_t pwmCCR) {
 
     if (GENX_ERROR != genx_sahiplendir(&pH->runtime.genel)) {
         
-        (void)NEXTION_sendCmdRetry("tsw 255,0");
+        (void)genx_sendCmdRetry("tsw 255,0");
 
         if (0U == pwmCCR) {
             
@@ -705,6 +772,7 @@ static bool monopolar_cikisBaslat(Monopolar_Handle_t *pH, uint16_t pwmCCR) {
 
     return basladiMi;
 }
+#endif /* (0 != MONO1_CUT_MASK) || (0 != MONO1_COAG_MASK) || (0 != MONO2_CUT_MASK) || (0 != MONO2_COAG_MASK) */
 
 /**
   * @brief Kanalı aktif duruma geçirir ve LED'lerini yakar
@@ -729,6 +797,8 @@ static void monopolar_ledAc(const Monopolar_Config_t *pCfg, bool aktifMi) {
     HAL_GPIO_WritePin(pCfg->led_beyaz.pPort, pCfg->led_beyaz.pin, (true == aktifMi) ? GPIO_PIN_RESET : GPIO_PIN_SET);
 }
 
+
+#if (0 != MONO1_CUT_MASK) || (0 != MONO2_CUT_MASK)
 /**
   * @brief CUT çıkışını kapatır ve çıkış sahipliğini bırakır
   * @param pH Kanal handle'ı
@@ -766,9 +836,12 @@ static void monopolar_stopCut(Monopolar_Handle_t *pH) {
     genx_serbestBirak(&pH->runtime.genel);
     HAL_Delay(300U);
 
-    (void)NEXTION_sendCmdRetry("tsw 255,1");
+    (void)genx_sendCmdRetry("tsw 255,1");
 }
+#endif /* (0 != MONO1_CUT_MASK) || (0 != MONO2_CUT_MASK) */
 
+
+#if (0 != MONO1_CUT_EN_BLEND1) || (0 != MONO2_CUT_EN_BLEND1)
 /**
   * @brief BLEND1 başlatma ve çıkış gücü izleme
   * @param pH Kanal handle'ı
@@ -825,7 +898,10 @@ static void monopolar_cutBlend1(Monopolar_Handle_t *pH) {
         }
     }
 }
+#endif /* (0 != MONO1_CUT_EN_BLEND1) || (0 != MONO2_CUT_EN_BLEND1) */
 
+
+#if (0 != MONO1_CUT_EN_BLEND2) || (0 != MONO2_CUT_EN_BLEND2)
 /**
   * @brief BLEND2 başlatma ve çıkış gücü izleme
   * @param pH Kanal handle'ı
@@ -883,7 +959,10 @@ static void monopolar_cutBlend2(Monopolar_Handle_t *pH) {
         }
     }
 }
+#endif /* (0 != MONO1_CUT_EN_BLEND2) || (0 != MONO2_CUT_EN_BLEND2) */
 
+
+#if (0 != MONO1_CUT_EN_BLEND3) || (0 != MONO2_CUT_EN_BLEND3)
 /**
   * @brief BLEND3 başlatma ve çıkış gücü izleme
   * @param pH Kanal handle'ı
@@ -939,14 +1018,17 @@ static void monopolar_cutBlend3(Monopolar_Handle_t *pH) {
         }
     }
 }
+#endif /* (0 != MONO1_CUT_EN_BLEND3) || (0 != MONO2_CUT_EN_BLEND3) */
 
+
+#if (0 != MONO1_CUT_EN_POLYPECTOMY) || (0 != MONO1_CUT_EN_PAPILLOTOMES) || (0 != MONO2_CUT_EN_POLYPECTOMY) || (0 != MONO2_CUT_EN_PAPILLOTOMES)
 /**
   * @brief Endocut başlatma
   * @param pH Kanal handle'ı
   * @retval None
   */
 static void monopolar_cutEndo(Monopolar_Handle_t *pH) {
-
+    
     if ((MONOPOLAR_DURUM_BOSTA == pH->runtime.durum) && (0U == gPlate100Overresistance)) {
         if (true == monopolar_cikisBaslat(pH, 0U)) {
             genx_dacUygula(0.0f);
@@ -957,7 +1039,10 @@ static void monopolar_cutEndo(Monopolar_Handle_t *pH) {
         }
     }
 }
+#endif /* (0 != MONO1_CUT_EN_POLYPECTOMY) || (0 != MONO1_CUT_EN_PAPILLOTOMES) || (0 != MONO2_CUT_EN_POLYPECTOMY) || (0 != MONO2_CUT_EN_PAPILLOTOMES) */
 
+
+#if (0 != MONO1_COAG_MASK) || (0 != MONO2_COAG_MASK)
 /**
   * @brief Start bayrağına göre mod fonksiyonunu veya durdurmayı çağırır
   * @param pH Kanal handle'ı
@@ -979,18 +1064,34 @@ static void monopolar_yonetCoag(Monopolar_Handle_t *pH) {
                 }
 
                 case MONOPOLAR_COAGMODE_SPRAY1: {
-                    monopolar_coagSpray1(pH);
+
+                    #if (0 != MONO1_COAG_EN_SPRAY1) || (0 != MONO2_COAG_EN_SPRAY1)
+                        monopolar_coagSpray1(pH);
+                    #endif
+
                     break;
                 }
 
                 case MONOPOLAR_COAGMODE_SPRAY2: {
+
+                    #if (0 != MONO1_COAG_EN_SPRAY2) || (0 != MONO2_COAG_EN_SPRAY2)
+                    
                     monopolar_coagSpray2(pH);
+                    
+                    #endif
+                    
                     break;
                 }
 
                 case MONOPOLAR_COAGMODE_SPRAY3:
                 case MONOPOLAR_COAGMODE_FULGURATION: {
+                    
+                    #if (0 != MONO1_COAG_EN_SPRAY3) || (0 != MONO2_COAG_EN_SPRAY3) || (0 != MONO1_COAG_EN_FULGURATION) || (0 != MONO2_COAG_EN_FULGURATION)
+                    
                     monopolar_coagSpray3(pH);
+                    
+                    #endif
+                    
                     break;
                 }
 
@@ -1015,7 +1116,10 @@ static void monopolar_yonetCoag(Monopolar_Handle_t *pH) {
         monopolar_stopCoag(pH);
     }
 }
+#endif /* (0 != MONO1_COAG_MASK) || (0 != MONO2_COAG_MASK) */
 
+
+#if (0 != MONO1_COAG_EN_CONTACT) || (0 != MONO2_COAG_EN_CONTACT)
 /**
   * @brief COAG CONTACT başlatma
   * @param pH Kanal handle'ı
@@ -1036,7 +1140,10 @@ static void monopolar_coagContact(Monopolar_Handle_t *pH) {
         }
     }
 }
+#endif /* (0 != MONO1_COAG_EN_CONTACT) || (0 != MONO2_COAG_EN_CONTACT) */
 
+
+#if (0 != MONO1_COAG_EN_SPRAY1) || (0 != MONO2_COAG_EN_SPRAY1)
 /**
   * @brief COAG SPRAY1 başlatma
   * @param pH Kanal handle'ı
@@ -1057,7 +1164,10 @@ static void monopolar_coagSpray1(Monopolar_Handle_t *pH) {
         }
     }
 }
+#endif /* (0 != MONO1_COAG_EN_SPRAY1) || (0 != MONO2_COAG_EN_SPRAY1) */
 
+
+#if (0 != MONO1_COAG_EN_SPRAY2) || (0 != MONO2_COAG_EN_SPRAY2)
 /**
   * @brief COAG SPRAY2 başlatma
   * @param pH Kanal handle'ı
@@ -1077,7 +1187,10 @@ static void monopolar_coagSpray2(Monopolar_Handle_t *pH) {
         }
     }
 }
+#endif /* (0 != MONO1_COAG_EN_SPRAY2) || (0 != MONO2_COAG_EN_SPRAY2) */
 
+
+#if (0 != MONO1_COAG_EN_SPRAY3) || (0 != MONO2_COAG_EN_SPRAY3)
 /**
   * @brief COAG SPRAY3 ve FULGURATION başlatma
   * @param pH Kanal handle'ı
@@ -1097,7 +1210,10 @@ static void monopolar_coagSpray3(Monopolar_Handle_t *pH) {
         }
     }
 }
+#endif /* (0 != MONO1_COAG_EN_SPRAY3) || (0 != MONO2_COAG_EN_SPRAY3) */
 
+
+#if (0 != MONO1_COAG_MASK) || (0 != MONO2_COAG_MASK)
 /**
   * @brief COAG çıkışını kapatır ve çıkış sahipliğini bırakır
   * @param pH Kanal handle'ı
@@ -1129,5 +1245,6 @@ static void monopolar_stopCoag(Monopolar_Handle_t *pH) {
     monopolar_ledAc(pCfg, false);
     genx_serbestBirak(&pH->runtime.genel);
     HAL_Delay(300U);
-    (void)NEXTION_sendCmdRetry("tsw 255,1");
+    (void)genx_sendCmdRetry("tsw 255,1");
 }
+#endif /* (0 != MONO1_COAG_MASK) || (0 != MONO2_COAG_MASK) */

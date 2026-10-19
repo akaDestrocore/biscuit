@@ -63,13 +63,13 @@ void selftest(void) {
                 if (gHighVolt <= esik) {
                     gDusukOncelikAlarm = 1U;
                     gAcikSayfa = UI_PAGE_ERROR;
-                    (void)NEXTION_sendCmdRetry(pHataKomut);
+                    (void)genx_sendCmdRetry(pHataKomut);
                     HAL_Delay(100U);
                     alarm_yonet();
                     HAL_Delay(500U);
                     gDusukOncelikAlarm = 0U;
                     gDusukAlarmSay = 0U;
-                    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET);
+                    HAL_GPIO_WritePin(ALARM_SOUND_R_GPIO_Port, ALARM_SOUND_R_Pin, GPIO_PIN_RESET);
                     HAL_TIM_PWM_Stop(&htim9, TIM_CHANNEL_2);
 
                     while (1U) {

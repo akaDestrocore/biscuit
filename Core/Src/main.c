@@ -48,7 +48,6 @@ DMA_HandleTypeDef hdma_adc1;
 DAC_HandleTypeDef hdac;
 
 TIM_HandleTypeDef htim2;
-TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
 TIM_HandleTypeDef htim5;
 TIM_HandleTypeDef htim9;
@@ -69,7 +68,6 @@ static void MX_DAC_Init(void);
 static void MX_TIM4_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM13_Init(void);
-static void MX_TIM3_Init(void);
 static void MX_TIM14_Init(void);
 static void MX_TIM5_Init(void);
 /* USER CODE BEGIN PFP */
@@ -102,7 +100,71 @@ static void NEXTION_Init(void) {
     (void)nextion_init(&nextion);
 }
 
+/**
+  * @brief Genel TIM süresi dolduğunda çağrılan fonksiyon
+  * @param pHtim Kesmeyi üreten zamanlayıcı
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *pHtim) {
 
+    if ((pHtim->Instance == TIM5) && gBeepAktif) {
+        
+        gBeepTick++;
+
+        if (gBeepTick >= ALARM_BEEP_TOTAL_TICKS) {
+            gBeepTick = 0U;
+        }
+
+        if ((gBeepTick < 25U) || ((gBeepTick >= 50U) && (gBeepTick < 75U)) || ((gBeepTick >= 100U) && (gBeepTick < 125U))) {
+            HAL_GPIO_WritePin(ALARM_PWM_S_GPIO_Port, ALARM_PWM_S_Pin, GPIO_PIN_SET);
+        }
+        else {
+            HAL_GPIO_WritePin( ALARM_PWM_S_GPIO_Port, ALARM_PWM_S_Pin, GPIO_PIN_RESET);
+        }
+    }
+
+#if (0 != MONO1_CUT_EN_POLYPECTOMY) || (0 != MONO1_CUT_EN_PAPILLOTOMES)
+    if (TIM5 == pHtim->Instance) {
+
+        Monopolar_Handle_t *pH = gEndoMutex;
+
+        if ((NULL != pH) && (1U == pH->runtime.genel.start)) {
+
+            float cutWatt = gEndoCutWattPol;
+            float coagWatt = gEndoCoagWattPol;
+            uint32_t cutTicks = gEndoCutTicks;
+            uint8_t say = gEndoCutSay;
+            float dacVal;
+
+            say++;
+            if (say <= cutTicks) {
+
+                dacVal = ((0.000022f * cutWatt * cutWatt * cutWatt) - (0.0205f * cutWatt * cutWatt) + (10.25f * cutWatt) + 287.0f);
+                dacVal /= 10.0f;
+
+                genx_dacUygula(dacVal);
+            }
+
+            if (say > cutTicks) {
+                __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 108U);
+                HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
+
+                dacVal = ((0.000075f * coagWatt * coagWatt * coagWatt) - (0.0212f * coagWatt * coagWatt) + (3.2617f * coagWatt) + 34.4f);
+
+                genx_dacUygula(dacVal);
+            }
+
+            if (say >= (gEndoCoagTimer + cutTicks)) {
+                
+                say = 0U;
+                HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_1);
+            }
+
+            gEndoCutSay = say;
+        }
+    }
+#endif /* (0 != MONO1_CUT_EN_POLYPECTOMY) || (0 != MONO1_CUT_EN_PAPILLOTOMES) */
+}
 /* USER CODE END 0 */
 
 /**
@@ -141,7 +203,6 @@ int main(void)
   MX_TIM4_Init();
   MX_TIM2_Init();
   MX_TIM13_Init();
-  MX_TIM3_Init();
   MX_TIM14_Init();
   MX_TIM5_Init();
   /* USER CODE BEGIN 2 */
@@ -150,9 +211,6 @@ int main(void)
 	//
 	HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_1);
 	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1,127);   // 33Khz
-	//
-	HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_1);
-	__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1,1400U); // 1,333hz
 	//
 	HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_1);
 	__HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1,4);     // 500
@@ -190,10 +248,10 @@ int main(void)
 
     (void)HAL_ADC_Start_DMA(&hadc1, (uint32_t *)gAdc1DmaBuff, ADC_CH_COUNT);
 
+	selftest();
+
     monopolar_init();
     bipolar_init();
-
-    selftest();
 
     while (1)
     {
@@ -203,7 +261,7 @@ int main(void)
         error_yonet();
         touch_yonet();
         input_yonet();
-        genx_getPwrVal();
+        genx_PwrDegeriVer();
         monopolar_yonet();
         bipolar_yonet();
     /* USER CODE END WHILE */
@@ -432,55 +490,6 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 2 */
   HAL_TIM_MspPostInit(&htim2);
-
-}
-
-/**
-  * @brief TIM3 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_TIM3_Init(void)
-{
-
-  /* USER CODE BEGIN TIM3_Init 0 */
-
-  /* USER CODE END TIM3_Init 0 */
-
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-  TIM_OC_InitTypeDef sConfigOC = {0};
-
-  /* USER CODE BEGIN TIM3_Init 1 */
-
-  /* USER CODE END TIM3_Init 1 */
-  htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 21000-1;
-  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 2600-1;
-  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_PWM_Init(&htim3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 0;
-  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM3_Init 2 */
-
-  /* USER CODE END TIM3_Init 2 */
-  HAL_TIM_MspPostInit(&htim3);
 
 }
 
@@ -754,8 +763,9 @@ static void MX_GPIO_Init(void)
                           |BIPOLAR_LED_SARI_Pin|RF_MONO_X_FAN_Pin|RF_MONO_RELAY_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, BIPOLAR_CUT_R_Pin|GPIO_PIN_2|MONO_KORUMA_Pin|MAIN_BOARD_PWM_R_Pin
-                          |MONO1_LED_BEYAZ_Pin|RF_BIPOLAR_R2_Pin|SPRAY_RELAY_Pin|PLATE_RELAY_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, BIPOLAR_CUT_R_Pin|ALARM_SOUND_R_Pin|MONO_KORUMA_Pin|MAIN_BOARD_PWM_R_Pin
+                          |ALARM_PWM_S_Pin|MONO1_LED_BEYAZ_Pin|RF_BIPOLAR_R2_Pin|SPRAY_RELAY_Pin
+                          |PLATE_RELAY_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, VOLUME_2_Pin|MONO2_LED_MAVI_Pin|MONO1_LED_MAVI_Pin|_74LS_R1_Pin
@@ -781,10 +791,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : BIPOLAR_CUT_R_Pin PC2 MONO_KORUMA_Pin MAIN_BOARD_PWM_R_Pin
-                           MONO1_LED_BEYAZ_Pin RF_BIPOLAR_R2_Pin SPRAY_RELAY_Pin PLATE_RELAY_Pin */
-  GPIO_InitStruct.Pin = BIPOLAR_CUT_R_Pin|GPIO_PIN_2|MONO_KORUMA_Pin|MAIN_BOARD_PWM_R_Pin
-                          |MONO1_LED_BEYAZ_Pin|RF_BIPOLAR_R2_Pin|SPRAY_RELAY_Pin|PLATE_RELAY_Pin;
+  /*Configure GPIO pins : BIPOLAR_CUT_R_Pin ALARM_SOUND_R_Pin MONO_KORUMA_Pin MAIN_BOARD_PWM_R_Pin
+                           ALARM_PWM_S_Pin MONO1_LED_BEYAZ_Pin RF_BIPOLAR_R2_Pin SPRAY_RELAY_Pin
+                           PLATE_RELAY_Pin */
+  GPIO_InitStruct.Pin = BIPOLAR_CUT_R_Pin|ALARM_SOUND_R_Pin|MONO_KORUMA_Pin|MAIN_BOARD_PWM_R_Pin
+                          |ALARM_PWM_S_Pin|MONO1_LED_BEYAZ_Pin|RF_BIPOLAR_R2_Pin|SPRAY_RELAY_Pin
+                          |PLATE_RELAY_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

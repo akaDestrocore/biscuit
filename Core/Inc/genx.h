@@ -73,6 +73,8 @@ void plate_yonet(void);
 void error_yonet(void);
 void input_yonet(void);
 void alarm_yonet(void);
+void alarm_beepBaslat(void);
+void alarm_beepDurdur(void);
 void selftest(void);
 
 #ifdef __cplusplus

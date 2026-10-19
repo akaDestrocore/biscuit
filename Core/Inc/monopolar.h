@@ -84,7 +84,7 @@ typedef struct {
 } Monopolar_Config_t;
 
 /**
- * @brief Kanalın çalışma anı durumu (RAM)
+ * @brief Kanalın çalışma anı durumu
  */
 typedef struct {
     Core_Channel_t genel;
@@ -106,6 +106,16 @@ typedef struct {
     const Monopolar_Config_t *pCfg;
     Monopolar_Runtime_t runtime;
 } Monopolar_Handle_t;
+
+/* ============================================================
+ * TIM5 (endocut)
+ * ============================================================*/
+extern Monopolar_Handle_t * volatile gEndoMutex;
+extern volatile uint8_t gEndoCutSay;
+extern volatile float gEndoCutWattPol;
+extern volatile float gEndoCoagWattPol;
+extern volatile uint32_t gEndoCutTicks;
+extern volatile uint16_t gEndoCoagTimer;
 
 extern Monopolar_Handle_t gMono1Cut;
 extern Monopolar_Handle_t gMono1Coag;

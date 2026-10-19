@@ -67,6 +67,8 @@ uint8_t gDusukOncelikAlarm = 0U;
 uint16_t gDusukAlarmSay = 0U;
 uint8_t gBipolarCutSes = 0U;
 uint8_t gBipolarCoagSes = 0U;
+volatile uint16_t gBeepTick = 0U;
+volatile bool gBeepAktif = false;
 
 // -- Ekran ayarları -------------------------------------------
 uint32_t gEndoCutKademe = 1U;
@@ -111,6 +113,7 @@ void genx_kanalUygula(Core_Channel_t *pCh) {
     if (NULL == pCh) {
         return;
     }
+    
     if (gChannelCount < CORE_MAX_CH) {
 
         gpChannels[gChannelCount] = pCh;
@@ -123,9 +126,9 @@ void genx_kanalUygula(Core_Channel_t *pCh) {
   * @param pOwner Sahipliği isteyen kanalın ortak yapısı
   * @retval 0 sahiplik alındı, 1 başka bir kanal sahip
   */
-int8_t genx_sahiplendir(const Core_Channel_t *pSahip) {
+Genx_Status_t genx_sahiplendir(const Core_Channel_t *pSahip) {
 
-    int8_t result = GENX_ERROR;
+    Genx_Status_t result = GENX_ERROR;
 
     if ((NULL == gMutex) || (pSahip == gMutex)) {
         gMutex = pSahip;
@@ -170,6 +173,8 @@ void genx_muxSecimi(uint8_t ch) {
     }
 }
 
+
+#if (1 == MONO1_CUT_EN_CUT) || (1 == MONO2_CUT_EN_CUT) || (1 == MONO1_COAG_EN_CONTACT) || (1 == MONO2_COAG_EN_CONTACT)
 /**
   * @brief Monopolar çıkış kanalını açar
   * @param relayPin Kanal rölesi
@@ -194,7 +199,11 @@ void genx_monoAc(uint16_t relayPin, uint8_t muxCh) {
 
     HAL_GPIO_WritePin(FAN_R_GPIO_Port, FAN_R_Pin, GPIO_PIN_SET);
 }
+#endif /* (1 == MONO1_CUT_EN_CUT) || (1 == MONO2_CUT_EN_CUT) || (1 == MONO1_COAG_EN_CONTACT) || (1 == MONO2_COAG_EN_CONTACT) */
 
+
+#if (1 == BIPOLAR1_CUT_EN_CUTTING) || (1 == BIPOLAR2_CUT_EN_CUTTING) || (1 == BIPOLAR1_COAG_EN_STANDARD) || (1 == BIPOLAR2_COAG_EN_STANDARD) \
+    || (1 == BIPOLAR1_COAG_EN_LIGATION) || (1 == BIPOLAR2_COAG_EN_LIGATION)
 /**
   * @brief Bipolar çıkış kanalını açar
   * @param mode `BIPOLAR_MODE_CUT` veya `BIPOLAR_MODE_COAG`
@@ -225,6 +234,9 @@ void genx_bipolarKapat(void) {
     HAL_GPIO_WritePin(FAN_R_GPIO_Port, FAN_R_Pin, GPIO_PIN_RESET);
     HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_1);
 }
+
+#endif /* (1 == BIPOLAR1_CUT_EN_CUTTING) || (1 == BIPOLAR2_CUT_EN_CUTTING) || (1 == BIPOLAR1_COAG_EN_STANDARD) || (1 == BIPOLAR2_COAG_EN_STANDARD) \
+    || (1 == BIPOLAR1_COAG_EN_LIGATION) || (1 == BIPOLAR2_COAG_EN_LIGATION) */
 
 /**
   * @brief Güç çıkışı sahipliğini bırakır
@@ -301,7 +313,7 @@ void genx_hepsiniDurdur(void) {
   * @retval None
   * @note Yeni değer varsa bu çağrı için gPwrYeni = true olur
   */
-void genx_getPwrVal(void) {
+void genx_PwrDegeriVer(void) {
 
     static uint32_t sonTik = 0U;
     static bool zatenAktif = false;
@@ -327,15 +339,15 @@ void genx_getPwrVal(void) {
   * @param pCmd Gönderilecek olan metin komutu
   * @retval NEXTION_STATUS_OK, zaman aşımında NEXTION_STATUS_TIMEOUT, aksi halde kuyruk hata kodu
   */
-Nextion_Status_e NEXTION_sendCmdRetry(const char *pCmd) {
+Genx_Status_t genx_sendCmdRetry(const char *pCmd) {
 
-    Nextion_Status_e status = NEXTION_STATUS_TIMEOUT;
+    Genx_Status_t status = (Genx_Status_t)NEXTION_STATUS_TIMEOUT;
     uint8_t attempt = 0U;
 
     do {
-        status = nextion_sendCmdBlocking(pCmd, NEXTION_TIMEOUT_MS);
+        status = (Genx_Status_t)nextion_sendCmdBlocking(pCmd, NEXTION_TIMEOUT_MS);
         attempt++;
-    } while ((NEXTION_STATUS_TIMEOUT == status) && (attempt < NEXTION_MAX_DENEME));
+    } while (((Genx_Status_t)NEXTION_STATUS_TIMEOUT == status) && (attempt < NEXTION_MAX_DENEME));
 
     return status;
 }
@@ -348,15 +360,15 @@ Nextion_Status_e NEXTION_sendCmdRetry(const char *pCmd) {
   * @param num Komuttaki sayı
   * @retval NEXTION_STATUS_OK, zaman aşımında NEXTION_STATUS_TIMEOUT, aksi halde kuyruk hata kodu
   */
-Nextion_Status_e NEXTION_sendNumRetry(char *pBuf, uint32_t bufSize, const char *pPrefix, int16_t num) {
+Genx_Status_t genx_sendNumRetry(char *pBuf, uint32_t bufSize, const char *pPrefix, int16_t num) {
 
-    Nextion_Status_e status = NEXTION_STATUS_TIMEOUT;
+    Genx_Status_t status = (Genx_Status_t)NEXTION_STATUS_TIMEOUT;
     uint8_t attempt = 0U;
 
     do {
-        status = nextion_sendNumBlocking(pBuf, bufSize, pPrefix, num, NEXTION_TIMEOUT_MS);
+        status = (Genx_Status_t)nextion_sendNumBlocking(pBuf, bufSize, pPrefix, num, NEXTION_TIMEOUT_MS);
         attempt++;
-    } while ((NEXTION_STATUS_TIMEOUT == status) && (attempt < NEXTION_MAX_DENEME));
+    } while (((Genx_Status_t)NEXTION_STATUS_TIMEOUT == status) && (attempt < NEXTION_MAX_DENEME));
 
     return status;
 }
@@ -368,15 +380,15 @@ Nextion_Status_e NEXTION_sendNumRetry(char *pBuf, uint32_t bufSize, const char *
   * @param size Değişkenin boyutu
   * @retval NEXTION_STATUS_OK, zaman aşımında NEXTION_STATUS_TIMEOUT, aksi halde kuyruk hata kodu
   */
-Nextion_Status_e NEXTION_getVarRetry(void *pDst, const char *pCmd, uint16_t size) {
+Genx_Status_t genx_getVarRetry(void *pDst, const char *pCmd, uint16_t size) {
 
-    Nextion_Status_e status = NEXTION_STATUS_TIMEOUT;
+    Genx_Status_t status = (Genx_Status_t)NEXTION_STATUS_TIMEOUT;
     uint8_t attempt = 0U;
 
     do {
-        status = nextion_getVarBlocking(pDst, pCmd, size);
+        status = (Genx_Status_t)nextion_getVarBlocking(pDst, pCmd, size);
         attempt++;
-    } while ((NEXTION_STATUS_TIMEOUT == status) && (attempt < NEXTION_MAX_DENEME));
+    } while (((Genx_Status_t)NEXTION_STATUS_TIMEOUT == status) && (attempt < NEXTION_MAX_DENEME));
 
     return status;
 }
@@ -386,11 +398,11 @@ Nextion_Status_e NEXTION_getVarRetry(void *pDst, const char *pCmd, uint16_t size
   * @param page `UI_Page_e` tipindeki sayfa IDsi
   * @retval NEXTION_STATUS_OK, zaman aşımında NEXTION_STATUS_TIMEOUT, aksi halde kuyruk hata kodu
   */
-Nextion_Status_e NEXTION_setPage(uint16_t page) {
+Genx_Status_t genx_setPage(uint16_t page) {
 
-    Nextion_Status_e status = NEXTION_sendNumRetry(gNumBuff, sizeof(gNumBuff), "page ", (int16_t)page);
+    Genx_Status_t status = genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), "page ", (int16_t)page);
 
-    if (NEXTION_STATUS_OK == status) {
+    if ((Genx_Status_t)NEXTION_STATUS_OK == status) {
         gAcikSayfa = (UI_Page_e)page;
     }
 

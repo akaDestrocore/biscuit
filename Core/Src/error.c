@@ -88,7 +88,7 @@ static void error_show(const char *pKomut) {
     gDusukOncelikAlarm = 1U;
     genx_hepsiniDurdur();
 
-    (void)NEXTION_setPage(UI_PAGE_ERROR);
-    (void)NEXTION_sendCmdRetry(pKomut);
+    (void)genx_setPage(UI_PAGE_ERROR);
+    (void)genx_sendCmdRetry(pKomut);
     HAL_Delay(100U);
 }

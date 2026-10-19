@@ -82,8 +82,6 @@ extern "C" {
 #include <string.h>
 #include <stdint.h>
 
-#define NEXTION_TOUCH_KEY(page, componentId) ((uint16_t)(((uint16_t)(page) << 8U) | (uint16_t)(componentId)))
-
 /* ============================================================
  * Ring buffer ayarları
  * ============================================================*/

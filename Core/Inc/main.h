@@ -67,6 +67,8 @@ void Error_Handler(void);
 #define BIPOLAR_CUT_R_GPIO_Port GPIOC
 #define BIPOLAR_TEK_PEDAL_Pin GPIO_PIN_1
 #define BIPOLAR_TEK_PEDAL_GPIO_Port GPIOC
+#define ALARM_SOUND_R_Pin GPIO_PIN_2
+#define ALARM_SOUND_R_GPIO_Port GPIOC
 #define MONO_KORUMA_Pin GPIO_PIN_4
 #define MONO_KORUMA_GPIO_Port GPIOC
 #define MAIN_BOARD_PWM_R_Pin GPIO_PIN_5
@@ -113,6 +115,8 @@ void Error_Handler(void);
 #define MONO1_LED_SARI_GPIO_Port GPIOD
 #define RF_GND_EARTH_R_Pin GPIO_PIN_15
 #define RF_GND_EARTH_R_GPIO_Port GPIOD
+#define ALARM_PWM_S_Pin GPIO_PIN_6
+#define ALARM_PWM_S_GPIO_Port GPIOC
 #define MONO1_LED_BEYAZ_Pin GPIO_PIN_7
 #define MONO1_LED_BEYAZ_GPIO_Port GPIOC
 #define RF_KALEM_Pin GPIO_PIN_8
