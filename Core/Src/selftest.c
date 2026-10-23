@@ -39,7 +39,7 @@ void selftest(void) {
             basladi = true;
         }
 
-        HAL_Delay(50U);
+        genx_delay(50U);
 
         if (true == basladi) {
             uint32_t esik = 10U;
@@ -63,10 +63,10 @@ void selftest(void) {
                 if (gHighVolt <= esik) {
                     gDusukOncelikAlarm = 1U;
                     gAcikSayfa = UI_PAGE_ERROR;
-                    (void)genx_sendCmdRetry(pHataKomut);
-                    HAL_Delay(100U);
+                    (void)genx_sendCmd(pHataKomut);
+                    genx_delay(100U);
                     alarm_yonet();
-                    HAL_Delay(500U);
+                    genx_delay(500U);
                     gDusukOncelikAlarm = 0U;
                     gDusukAlarmSay = 0U;
                     HAL_GPIO_WritePin(ALARM_SOUND_R_GPIO_Port, ALARM_SOUND_R_Pin, GPIO_PIN_RESET);

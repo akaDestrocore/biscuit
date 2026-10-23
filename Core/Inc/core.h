@@ -25,6 +25,7 @@ extern "C" {
 
 #define CORE_MAX_CH 				8U // toplam mono/bipolar yol sayısı
 #define NEXTION_MAX_DENEME 			10U
+#define GENX_KUYRUK_BEKLE_MS		20U
 #define ALARM_BEEP_TOTAL_TICKS     	375U
 
 extern char gNumBuff[NEXTION_CMD_MAX_LEN + 1U];
@@ -120,18 +121,14 @@ typedef enum {
 	S1__MONO1_CUT_WATT_BUTTON			= NEXTION_TOUCH_KEY(UI_PAGE_MAIN, 17U),
 	S1__MONO1_COAG_MODE_BUTTON			= NEXTION_TOUCH_KEY(UI_PAGE_MAIN, 16U),
 	S1__MONO1_COAG_WATT_BUTTON			= NEXTION_TOUCH_KEY(UI_PAGE_MAIN, 18U),
-	S1__BIPOLAR_CUT_MODE_BUTTON			= NEXTION_TOUCH_KEY(UI_PAGE_MAIN, 29U),
-	S1__BIPOLAR_CUT_WATT_BUTTON			= NEXTION_TOUCH_KEY(UI_PAGE_MAIN, 23U),
-	S1__BIPOLAR_COAG_MODE_BUTTON		= NEXTION_TOUCH_KEY(UI_PAGE_MAIN, 30U),
-	S1__BIPOLAR_COAG_WATT_BUTTON		= NEXTION_TOUCH_KEY(UI_PAGE_MAIN, 24U),
 	S1__BIPOLAR1_CUT_MODE_BUTTON 		= NEXTION_TOUCH_KEY(UI_PAGE_MAIN, 29U),
 	S1__BIPOLAR1_CUT_WATT_BUTTON 		= NEXTION_TOUCH_KEY(UI_PAGE_MAIN, 23U),
 	S1__BIPOLAR1_COAG_MODE_BUTTON		= NEXTION_TOUCH_KEY(UI_PAGE_MAIN, 30U),
 	S1__BIPOLAR1_COAG_WATT_BUTTON		= NEXTION_TOUCH_KEY(UI_PAGE_MAIN, 24U),
-	S1__BIPOLAR2_CUT_MODE_BUTTON 		= NEXTION_TOUCH_KEY(UI_PAGE_MAIN, 25U),
-	S1__BIPOLAR2_CUT_WATT_BUTTON 		= NEXTION_TOUCH_KEY(UI_PAGE_MAIN, 19U),
-	S1__BIPOLAR2_COAG_MODE_BUTTON		= NEXTION_TOUCH_KEY(UI_PAGE_MAIN, 26U),
-	S1__BIPOLAR2_COAG_WATT_BUTTON		= NEXTION_TOUCH_KEY(UI_PAGE_MAIN, 20U),
+	S1__BIPOLAR2_CUT_MODE_BUTTON 		= NEXTION_TOUCH_KEY(UI_PAGE_MAIN, 27U),
+	S1__BIPOLAR2_CUT_WATT_BUTTON 		= NEXTION_TOUCH_KEY(UI_PAGE_MAIN, 21U),
+	S1__BIPOLAR2_COAG_MODE_BUTTON		= NEXTION_TOUCH_KEY(UI_PAGE_MAIN, 28U),
+	S1__BIPOLAR2_COAG_WATT_BUTTON		= NEXTION_TOUCH_KEY(UI_PAGE_MAIN, 22U),
 	S1__BIPOLAR_RF_CUT_MODE_BUTTON  	= NEXTION_TOUCH_KEY(UI_PAGE_MAIN, 27U),
 	S1__BIPOLAR_RF_CUT_WATT_BUTTON  	= NEXTION_TOUCH_KEY(UI_PAGE_MAIN, 21U),
 	S1__BIPOLAR_RF_COAG_MODE_BUTTON		= NEXTION_TOUCH_KEY(UI_PAGE_MAIN, 28U),
@@ -140,10 +137,6 @@ typedef enum {
 	S1__MONO2_CUT_WATT_BUTTON			= NEXTION_TOUCH_KEY(UI_PAGE_MAIN, 19U),
 	S1__MONO2_COAG_MODE_BUTTON			= NEXTION_TOUCH_KEY(UI_PAGE_MAIN, 26U),
 	S1__MONO2_COAG_WATT_BUTTON			= NEXTION_TOUCH_KEY(UI_PAGE_MAIN, 20U),
-	S1__SEAL_CUT_MODE_BUTTON			= NEXTION_TOUCH_KEY(UI_PAGE_MAIN, 27U),
-	S1__SEAL_CUT_WATT_BUTTON			= NEXTION_TOUCH_KEY(UI_PAGE_MAIN, 21U),
-	S1__SEAL_COAG_MODE_BUTTON			= NEXTION_TOUCH_KEY(UI_PAGE_MAIN, 28U),
-	S1__SEAL_COAG_WATT_BUTTON			= NEXTION_TOUCH_KEY(UI_PAGE_MAIN, 22U),
 	S1__MENU_BUTTON_BUTTON				= NEXTION_TOUCH_KEY(UI_PAGE_MAIN, 9U),
 	S1__LOG_BUTTON						= NEXTION_TOUCH_KEY(UI_PAGE_MAIN, 10U),
 	S1__PROGRAM_FAV_BUTTON				= NEXTION_TOUCH_KEY(UI_PAGE_MAIN, 11U),
@@ -265,7 +258,6 @@ extern uint8_t gMonoPwrKoruma;
 extern uint8_t gPedalError3;
 extern uint8_t gBipolarKoruma;
 extern uint8_t gBiPwrKoruma;
-extern uint8_t gPedal2KezError;
 
 // -- Sayfa/plate/alarm ----------------------------------------
 extern uint8_t gPlate100Overresistance;
@@ -301,16 +293,17 @@ void genx_monoAc(uint16_t relayPin, uint8_t muxCh);
 void genx_bipolarAc(Bipolar_Mode_e mode);
 void genx_bipolarKapat(void);
 void genx_serbestBirak(const Core_Channel_t *pSahip);
-bool genx_sayacBittiMi(bool kosul, uint8_t *pCnt);
+Genx_Status_t genx_sayacBittiMi(bool kosul, uint8_t *pCnt);
 bool genx_baskaAktifVarMi(const Core_Channel_t *pSelf);
 void genx_hepsiniDurdur(void);
-void genx_PwrDegeriVer(void);
+void genx_PwrDegeriniOku(void);
 
 // -- Nextion yardımcıları
-Genx_Status_t genx_sendCmdRetry(const char *pCmd);
-Genx_Status_t genx_sendNumRetry(char *pBuf, uint32_t bufSize, const char *pPrefix, int16_t num);
+Genx_Status_t genx_sendCmd(const char *pCmd);
+Genx_Status_t genx_sendNum(char *pBuf, uint32_t bufSize, const char *pPrefix, int16_t num);
 Genx_Status_t genx_getVarRetry(void *pDst, const char *pCmd, uint16_t size);
 Genx_Status_t genx_setPage(uint16_t page);
+void genx_delay(uint32_t ms);
 
 #ifdef __cplusplus
 }

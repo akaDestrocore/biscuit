@@ -189,7 +189,7 @@ static void bipolar_pwrKontrol(const Bipolar_Handle_t *pH);
   * @retval None
   */
 void bipolar_init(void) {
-
+    
 #if (0 != BIPOLAR1_CUT_MASK)
     genx_kanalUygula(&gBipolar1Cut.runtime.genel);
 #endif
@@ -322,7 +322,7 @@ static void bipolar_yonetCut(Bipolar_Handle_t *pH) {
             float guc = (float)gAdc1DmaBuff[ADC_CH_BIPOLAR_PWR];
 
             pBip->okuma_gecikme = 0U;
-            HAL_Delay(20U);
+            genx_delay(20U);
 
             if ((19.0f < pBip->pol) && (1U == pBip->koruma_start)) {
                 
@@ -340,7 +340,7 @@ static void bipolar_yonetCut(Bipolar_Handle_t *pH) {
 
                     pBip->koruma_veri = veri;
                     pBip->yeniden_hesap = true;
-                    HAL_Delay(20U);
+                    genx_delay(20U);
                     if (((float)veri > pBip->pol) || (veri >= 90U)) {
                         pBip->formul_ac = 1U;
                     }
@@ -361,10 +361,11 @@ static void bipolar_yonetCut(Bipolar_Handle_t *pH) {
     // Başlatma yada yeniden hesap
     if ((true == trigger) && ((BIPOLAR_STATE_IDLE == pBip->durum) || (true == pBip->yeniden_hesap))) {
         
-        if (0U == genx_sahiplendir(&pBip->genel)) {
+        if (GENX_SUCCESS == genx_sahiplendir(&pBip->genel)) {
+            
             float x;
 
-            (void)genx_sendCmdRetry("tsw 255,0");
+            (void)genx_sendCmd("tsw 255,0");
             genx_bipolarAc(BIPOLAR_MODE_CUT);
 
             if ((0U == pBip->koruma_start) && (pBip->pol > 19.0f)) {
@@ -375,7 +376,7 @@ static void bipolar_yonetCut(Bipolar_Handle_t *pH) {
             }
 
             gBipolarCutSes = 1U;
-            HAL_Delay(200U);
+            genx_delay(200U);
 
             if ((pBip->pol < 20.0f) || (1U == pBip->formul_ac)) {
                 
@@ -413,7 +414,7 @@ static void bipolar_yonetCut(Bipolar_Handle_t *pH) {
     if ((BIPOLAR_STATE_ACTIVE == pBip->durum) && (0U == pBip->genel.start)) {
         genx_dacUygula(0.0f);
         gBipolarCutSes = 2U;
-        HAL_Delay(100U);
+        genx_delay(100U);
         genx_bipolarKapat();
         bipolar_ledAc(BIPOLAR_ISLEV_CUT, false);
         pBip->olcum_sonuc = 0U;
@@ -422,8 +423,8 @@ static void bipolar_yonetCut(Bipolar_Handle_t *pH) {
         pBip->yeniden_hesap = false;
         pBip->durum = BIPOLAR_STATE_IDLE;
         genx_serbestBirak(&pBip->genel);
-        HAL_Delay(300U);
-        (void)genx_sendCmdRetry("tsw 255,1");
+        genx_delay(300U);
+        (void)genx_sendCmd("tsw 255,1");
     }
 }
 #endif /* (0 != BIPOLAR1_CUT_MASK) || (0 != BIPOLAR2_CUT_MASK) */
@@ -451,7 +452,7 @@ static void bipolar_yonetCoag(Bipolar_Handle_t *pH) {
 
             pBip->okuma_gecikme = 0U;
             gLigasureWattYaz = gAdc1DmaBuff[ADC_CH_BIPOLAR_PWR];
-            HAL_Delay(20U);
+            genx_delay(20U);
             
             if ((20.0f <= pBip->pol) && (1U == pBip->koruma_start)) {
                 
@@ -471,7 +472,7 @@ static void bipolar_yonetCoag(Bipolar_Handle_t *pH) {
 
                     pBip->koruma_veri = veri;
                     pBip->yeniden_hesap = true;
-                    HAL_Delay(20U);
+                    genx_delay(20U);
 
                     if (((float)veri > pBip->pol) || (veri >= 120U)) {
                         
@@ -495,11 +496,11 @@ static void bipolar_yonetCoag(Bipolar_Handle_t *pH) {
     // Başlatma yada yeniden hesap
     if ((true == trigger) && ((BIPOLAR_STATE_IDLE == pBip->durum) || (true == pBip->yeniden_hesap))) {
         
-        if (0U == genx_sahiplendir(&pBip->genel)) {
+        if (GENX_SUCCESS == genx_sahiplendir(&pBip->genel)) {
             
             float x;
 
-            (void)genx_sendCmdRetry("tsw 255,0");
+            (void)genx_sendCmd("tsw 255,0");
             genx_bipolarAc(BIPOLAR_MODE_COAG);
 
             if ((0U == pBip->koruma_start) && (20.0f <= pBip->pol)) {
@@ -509,7 +510,7 @@ static void bipolar_yonetCoag(Bipolar_Handle_t *pH) {
             }
 
             gBipolarCoagSes = 1U;
-            HAL_Delay(200U);
+            genx_delay(200U);
 
             if ((pBip->pol < 20.0f) || (1U == pBip->formul_ac)) {
                 
@@ -548,7 +549,7 @@ static void bipolar_yonetCoag(Bipolar_Handle_t *pH) {
         
         genx_dacUygula(0.0f);
         gBipolarCoagSes = 2U;
-        HAL_Delay(100U);
+        genx_delay(100U);
         genx_bipolarKapat();
         bipolar_ledAc(BIPOLAR_ISLEV_COAG, false);
         pBip->olcum_sonuc = 0U;
@@ -557,8 +558,8 @@ static void bipolar_yonetCoag(Bipolar_Handle_t *pH) {
         pBip->yeniden_hesap = false;
         pBip->durum = BIPOLAR_STATE_IDLE;
         genx_serbestBirak(&pBip->genel);
-        HAL_Delay(100U);
-        (void)genx_sendCmdRetry("tsw 255,1");
+        genx_delay(100U);
+        (void)genx_sendCmd("tsw 255,1");
     }
 
     // Autostop

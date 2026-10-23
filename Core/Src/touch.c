@@ -140,11 +140,15 @@ static void touch_basmaOlayi(uint16_t objName) {
     if (UI_PAGE_PLATE == gAcikSayfa) {
         
         if (PLATE_DUAL == gPlate) {
-            (void)genx_sendCmdRetry("S18_plate_sec.p3.pic=111");
+            (void)genx_sendCmd("S18_plate_sec.p3.pic=111");
+            (void)genx_sendCmd("S18_plate_sec.p2.pic=103");
+            (void)genx_sendCmd("S18_plate_sec.p5.pic=110");
         }
 
         if (PLATE_SINGLE == gPlate) {
-            (void)genx_sendCmdRetry("S18_plate_sec.p5.pic=111");
+            (void)genx_sendCmd("S18_plate_sec.p5.pic=111");
+            (void)genx_sendCmd("S18_plate_sec.p0.pic=102");
+            (void)genx_sendCmd("S18_plate_sec.p3.pic=110");
         }
     }
 
@@ -218,49 +222,49 @@ static void touch_basmaOlayi(uint16_t objName) {
             break;
         }
 
-        case S1__BIPOLAR_CUT_WATT_BUTTON: {
+        case S1__BIPOLAR1_CUT_WATT_BUTTON: {
             
             (void)genx_setPage(UI_PAGE_BIPOLAR1_CUT_WATT);
             break;
         }
 
-        case S1__BIPOLAR_CUT_MODE_BUTTON: {
+        case S1__BIPOLAR1_CUT_MODE_BUTTON: {
             
             (void)genx_setPage(UI_PAGE_BIPOLAR1_CUT_MODE);
             break;
         }
 
-        case S1__BIPOLAR_COAG_WATT_BUTTON: {
+        case S1__BIPOLAR1_COAG_WATT_BUTTON: {
             
             (void)genx_setPage(UI_PAGE_BIPOLAR1_COAG_WATT);
             break;
         }
 
-        case S1__BIPOLAR_COAG_MODE_BUTTON: {
+        case S1__BIPOLAR1_COAG_MODE_BUTTON: {
             
             (void)genx_setPage(UI_PAGE_BIPOLAR1_COAG_MODE);
             break;
         }
 
-        case S1__SEAL_CUT_WATT_BUTTON: {
+        case S1__BIPOLAR2_CUT_WATT_BUTTON: {
             
             (void)genx_setPage(UI_PAGE_BIPOLAR2_CUT_WATT);
             break;
         }
 
-        case S1__SEAL_CUT_MODE_BUTTON: {
+        case S1__BIPOLAR2_CUT_MODE_BUTTON: {
             
             (void)genx_setPage(UI_PAGE_BIPOLAR2_CUT_MODE);
             break;
         }
 
-        case S1__SEAL_COAG_WATT_BUTTON: {
+        case S1__BIPOLAR2_COAG_WATT_BUTTON: {
             
             (void)genx_setPage(UI_PAGE_BIPOLAR2_COAG_WATT);
             break;
         }
 
-        case S1__SEAL_COAG_MODE_BUTTON: {
+        case S1__BIPOLAR2_COAG_MODE_BUTTON: {
             
             (void)genx_setPage(UI_PAGE_BIPOLAR2_COAG_MODE);
             break;
@@ -293,10 +297,10 @@ static void touch_basmaOlayi(uint16_t objName) {
         case S1__MONO1_PEDAL_BUTTON: {
             if (1U == gMono1Pedal) {
                 gMono1Pedal = 0U;
-                (void)genx_sendCmdRetry("S1_anasayfa.p4.pic=6");
+                (void)genx_sendCmd("S1_anasayfa.p4.pic=6");
             } else {
                 gMono1Pedal = 1U;
-                (void)genx_sendCmdRetry("S1_anasayfa.p4.pic=0");
+                (void)genx_sendCmd("S1_anasayfa.p4.pic=0");
                 touch_tumPedalKapat(PEDAL_MONO1);
             }
             break;
@@ -305,10 +309,10 @@ static void touch_basmaOlayi(uint16_t objName) {
         case S1__MONO2_PEDAL_BUTTON: {
             if (1U == gMono2Pedal) {
                 gMono2Pedal = 0U;
-                (void)genx_sendCmdRetry("S1_anasayfa.p5.pic=6");
+                (void)genx_sendCmd("S1_anasayfa.p5.pic=6");
             } else {
                 gMono2Pedal = 1U;
-                (void)genx_sendCmdRetry("S1_anasayfa.p5.pic=0");
+                (void)genx_sendCmd("S1_anasayfa.p5.pic=0");
                 touch_tumPedalKapat(PEDAL_MONO2);
             }
             break;
@@ -319,14 +323,14 @@ static void touch_basmaOlayi(uint16_t objName) {
             if (1U == gBipolar1PedalCift) {
                 
                 gBipolar1PedalCift = 0U;
-                (void)genx_sendCmdRetry("S1_anasayfa.p6.pic=5");
+                (void)genx_sendCmd("S1_anasayfa.p6.pic=5");
                 touch_bipolarRoleUygula();
             } else {
                 
                 const Bipolar_ModeInfo_t *pModBilgi;
 
                 gBipolar1PedalCift = 1U;
-                (void)genx_sendCmdRetry("S1_anasayfa.p6.pic=4");
+                (void)genx_sendCmd("S1_anasayfa.p6.pic=4");
                 touch_tumPedalKapat(PEDAL_BIP1);
 
                 // START gibi hand modu pedalla çalışmaz, STANDARD'a döner
@@ -336,8 +340,8 @@ static void touch_basmaOlayi(uint16_t objName) {
                     
                     gBipolar1Coag.runtime.user_mode = BIPOLAR_STD_COAGMODE_STANDARD;
                     touch_polGuncelle();
-                    (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), "S13_b1_cog_mod.USER_MODE.val=", (int16_t)BIPOLAR_STD_COAGMODE_STANDARD);
-                    (void)genx_sendCmdRetry("S1_anasayfa.p20.pic=52");
+                    (void)genx_sendNum(gNumBuff, sizeof(gNumBuff), "S13_b1_cog_mod.USER_MODE.val=", (int16_t)BIPOLAR_STD_COAGMODE_STANDARD);
+                    (void)genx_sendCmd("S1_anasayfa.p20.pic=52");
                 }
             }
             break;
@@ -348,13 +352,13 @@ static void touch_basmaOlayi(uint16_t objName) {
             if (1U == gBipolar2PedalCift) {
 
                 gBipolar2PedalCift = 0U;
-                (void)genx_sendCmdRetry("S1_anasayfa.p7.pic=5");
+                (void)genx_sendCmd("S1_anasayfa.p7.pic=5");
                 touch_bipolarRoleUygula();
 
             } else {
                 
                 gBipolar2PedalCift = 1U;
-                (void)genx_sendCmdRetry("S1_anasayfa.p7.pic=4");
+                (void)genx_sendCmd("S1_anasayfa.p7.pic=4");
                 touch_tumPedalKapat(PEDAL_BIP2);
             }
 
@@ -488,7 +492,7 @@ static void touch_basmaOlayi(uint16_t objName) {
                 int w = snprintf(varsayilanModStr, sizeof(varsayilanModStr), "%s=", gBipolar1Cut.pCfg->pModeGetCmd);
 
                 if ((w > 0) && ((size_t)w < sizeof(varsayilanModStr))) {
-                    (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), varsayilanModStr, (int16_t)gBipolar1Cut.pCfg->varsayilan_mod);
+                    (void)genx_sendNum(gNumBuff, sizeof(gNumBuff), varsayilanModStr, (int16_t)gBipolar1Cut.pCfg->varsayilan_mod);
                 }
                 return;
             }
@@ -506,7 +510,7 @@ static void touch_basmaOlayi(uint16_t objName) {
                 int w = snprintf(varsayilanModStr, sizeof(varsayilanModStr), "%s=", gBipolar2Cut.pCfg->pModeGetCmd);
 
                 if ((w > 0) && ((size_t)w < sizeof(varsayilanModStr))) {
-                    (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), varsayilanModStr, (int16_t)gBipolar2Cut.pCfg->varsayilan_mod);
+                    (void)genx_sendNum(gNumBuff, sizeof(gNumBuff), varsayilanModStr, (int16_t)gBipolar2Cut.pCfg->varsayilan_mod);
                 }
                 return;
             }
@@ -524,7 +528,7 @@ static void touch_basmaOlayi(uint16_t objName) {
                 int w = snprintf(varsayilanModStr, sizeof(varsayilanModStr), "%s=", gBipolar1Coag.pCfg->pModeGetCmd);
 
                 if ((w > 0) && ((size_t)w < sizeof(varsayilanModStr))) {
-                    (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), varsayilanModStr, (int16_t)gBipolar1Coag.pCfg->varsayilan_mod);
+                    (void)genx_sendNum(gNumBuff, sizeof(gNumBuff), varsayilanModStr, (int16_t)gBipolar1Coag.pCfg->varsayilan_mod);
                 }
                 return;
             }
@@ -543,7 +547,7 @@ static void touch_basmaOlayi(uint16_t objName) {
                 int w = snprintf(varsayilanModStr, sizeof(varsayilanModStr), "%s=", gBipolar2Coag.pCfg->pModeGetCmd);
 
                 if ((w > 0) && ((size_t)w < sizeof(varsayilanModStr))) {
-                    (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), varsayilanModStr, (int16_t)gBipolar2Coag.pCfg->varsayilan_mod);
+                    (void)genx_sendNum(gNumBuff, sizeof(gNumBuff), varsayilanModStr, (int16_t)gBipolar2Coag.pCfg->varsayilan_mod);
                 }
                 return;
             }
@@ -573,27 +577,27 @@ static void touch_basmaOlayi(uint16_t objName) {
         case S18__DUALPLATE_BUTTON: {
             
             gPlate = PLATE_DUAL;
-            (void)genx_sendCmdRetry("S18_plate_sec.p3.pic=111");
-            (void)genx_sendCmdRetry("S18_plate_sec.p5.pic=110");
-            (void)genx_sendCmdRetry("S18_plate_sec.p2.pic=103");
-            (void)genx_sendCmdRetry("S18_plate_sec.j2.val=0");
+            (void)genx_sendCmd("S18_plate_sec.p3.pic=111");
+            (void)genx_sendCmd("S18_plate_sec.p5.pic=110");
+            (void)genx_sendCmd("S18_plate_sec.p2.pic=103");
+            (void)genx_sendCmd("S18_plate_sec.j2.val=0");
             break;
         }
 
         case S18__SINGLEPLATE_BUTTON: {
             
             gPlate = PLATE_SINGLE;
-            (void)genx_sendCmdRetry("S18_plate_sec.p3.pic=110");
-            (void)genx_sendCmdRetry("S18_plate_sec.p5.pic=111");
-            (void)genx_sendCmdRetry("S18_plate_sec.p0.pic=102");
-            (void)genx_sendCmdRetry("S18_plate_sec.j0.val=0");
+            (void)genx_sendCmd("S18_plate_sec.p3.pic=110");
+            (void)genx_sendCmd("S18_plate_sec.p5.pic=111");
+            (void)genx_sendCmd("S18_plate_sec.p0.pic=102");
+            (void)genx_sendCmd("S18_plate_sec.j0.val=0");
             break;
         }
 
         // -- Program yükleme ve ses -------------------------------
         case S21__OK_BUTTON: {
             
-            (void)genx_sendCmdRetry("tsw 255,0");
+            (void)genx_sendCmd("tsw 255,0");
             gVeriKayit = 1U;
             break;
         }
@@ -604,7 +608,7 @@ static void touch_basmaOlayi(uint16_t objName) {
                 gMonopolarCutSes = 1U;
                 gVolumeData++;
                 touch_sesUygula(gVolumeData);
-                (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), "S25_ses_ayar.j0.val=", (int16_t)(gVolumeData * 25U));
+                (void)genx_sendNum(gNumBuff, sizeof(gNumBuff), "S25_ses_ayar.j0.val=", (int16_t)(gVolumeData * 25U));
             }
             break;
         }
@@ -615,7 +619,7 @@ static void touch_basmaOlayi(uint16_t objName) {
                 gMonopolarCutSes = 1U;
                 gVolumeData--;
                 touch_sesUygula(gVolumeData);
-                (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), "S25_ses_ayar.j0.val=", (int16_t)(gVolumeData * 25U));
+                (void)genx_sendNum(gNumBuff, sizeof(gNumBuff), "S25_ses_ayar.j0.val=", (int16_t)(gVolumeData * 25U));
             }
             break;
         }
@@ -624,7 +628,7 @@ static void touch_basmaOlayi(uint16_t objName) {
         case S29__OK_BUTTON: {
             gAlarmPlate = 2U;
             alarm_yonet();
-            HAL_Delay(50U);
+            genx_delay(50U);
             gPedalError3 = 0U;
             gPlateError = 0U;
             gMono1Koruma = 0U;
@@ -633,10 +637,9 @@ static void touch_basmaOlayi(uint16_t objName) {
             gBiPwrKoruma = 0U;
             gMonoPwrKoruma = 0U;
             gPwrKoruma = 0U;
-            gPedal2KezError = 0U;
             (void)genx_setPage(UI_PAGE_MAIN);
-            HAL_Delay(100U);
-            (void)genx_sendCmdRetry("tsw 255,1");
+            genx_delay(100U);
+            (void)genx_sendCmd("tsw 255,1");
             break;
         }
 
@@ -659,22 +662,22 @@ static void touch_tumPedalKapat(uint8_t haric) {
 
     if ((PEDAL_MONO1 != haric) && (1U == gMono1Pedal)) {
         gMono1Pedal = 0U;
-        (void)genx_sendCmdRetry("S1_anasayfa.p4.pic=6");
+        (void)genx_sendCmd("S1_anasayfa.p4.pic=6");
     }
 
     if ((PEDAL_MONO2 != haric) && (1U == gMono2Pedal)) {
         gMono2Pedal = 0U;
-        (void)genx_sendCmdRetry("S1_anasayfa.p5.pic=6");
+        (void)genx_sendCmd("S1_anasayfa.p5.pic=6");
     }
 
     if ((PEDAL_BIP1 != haric) && (1U == gBipolar1PedalCift)) {
         gBipolar1PedalCift = 0U;
-        (void)genx_sendCmdRetry("S1_anasayfa.p6.pic=5");
+        (void)genx_sendCmd("S1_anasayfa.p6.pic=5");
     }
 
     if ((PEDAL_BIP2 != haric) && (1U == gBipolar2PedalCift)) {
         gBipolar2PedalCift = 0U;
-        (void)genx_sendCmdRetry("S1_anasayfa.p7.pic=5");
+        (void)genx_sendCmd("S1_anasayfa.p7.pic=5");
     }
 
     touch_bipolarRoleUygula();
@@ -689,7 +692,7 @@ static void touch_monoWattOk(Monopolar_Handle_t *pH) {
 
     (void)genx_getVarRetry(&pH->runtime.user_watt, pH->pCfg->pWattGetCmd, sizeof(pH->runtime.user_watt));
     touch_polGuncelle();
-    (void)genx_sendCmdRetry(pH->pCfg->pMainSetCmd);
+    (void)genx_sendCmd(pH->pCfg->pMainSetCmd);
     (void)genx_setPage(UI_PAGE_MAIN);
 }
 
@@ -724,7 +727,7 @@ static void touch_monoModOk(Monopolar_Handle_t *pH) {
         int w = snprintf(varsayilanModStr, sizeof(varsayilanModStr), "%s=", pH->pCfg->pModeGetCmd);
 
         if ((w > 0) && ((size_t)w < sizeof(varsayilanModStr))) {
-            (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), varsayilanModStr, (int16_t)pH->pCfg->varsayilan_mod);
+            (void)genx_sendNum(gNumBuff, sizeof(gNumBuff), varsayilanModStr, (int16_t)pH->pCfg->varsayilan_mod);
         }
         return;
     }
@@ -767,10 +770,10 @@ static void touch_veriKayitOku(void) {
 
         ilerleme = (uint8_t)(((uint16_t)(i + 1U) * 100U) / VAR_COUNT);
 
-        (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), "j0.val=", (int16_t)ilerleme);
+        (void)genx_sendNum(gNumBuff, sizeof(gNumBuff), "j0.val=", (int16_t)ilerleme);
     }
 
-    (void)genx_sendCmdRetry("S0_acilma.t1.txt=\"OK\"");
+    (void)genx_sendCmd("S0_acilma.t1.txt=\"OK\"");
 
     // Kayıtlı mod bu kanalda kapalıysa varsayılana dönülür
     touch_modDogrula();
@@ -801,9 +804,9 @@ static void touch_veriKayitOku(void) {
     monopolar_endoHesap(&gMono2Cut);
 #endif
 
-    HAL_Delay(50U);
+    genx_delay(50U);
     gVeriKayit = 0U;
-    (void)genx_sendCmdRetry("tsw 255,1");
+    (void)genx_sendCmd("tsw 255,1");
     (void)genx_setPage(UI_PAGE_MAIN);
 }
 
@@ -814,35 +817,35 @@ static void touch_veriKayitOku(void) {
 static void touch_modDogrula(void) {
 
     if (true == monopolar_modKontrol(&gMono1Cut)) {
-        (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), "S3_m1_cut_mod.USER_MODE.val=", (int16_t)gMono1Cut.pCfg->varsayilan_mod);
+        (void)genx_sendNum(gNumBuff, sizeof(gNumBuff), "S3_m1_cut_mod.USER_MODE.val=", (int16_t)gMono1Cut.pCfg->varsayilan_mod);
     }
 
     if (true == monopolar_modKontrol(&gMono1Coag)) {
-        (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), "S5_m1_cog_mod.USER_MODE.val=", (int16_t)gMono1Coag.pCfg->varsayilan_mod);
+        (void)genx_sendNum(gNumBuff, sizeof(gNumBuff), "S5_m1_cog_mod.USER_MODE.val=", (int16_t)gMono1Coag.pCfg->varsayilan_mod);
     }
 
     if (true == monopolar_modKontrol(&gMono2Cut)) {
-        (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), "S7_m2_cut_mod.USER_MODE.val=", (int16_t)gMono2Cut.pCfg->varsayilan_mod);
+        (void)genx_sendNum(gNumBuff, sizeof(gNumBuff), "S7_m2_cut_mod.USER_MODE.val=", (int16_t)gMono2Cut.pCfg->varsayilan_mod);
     }
 
     if (true == monopolar_modKontrol(&gMono2Coag)) {
-        (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), "S9_m2_cog_mod.USER_MODE.val=", (int16_t)gMono2Coag.pCfg->varsayilan_mod);
+        (void)genx_sendNum(gNumBuff, sizeof(gNumBuff), "S9_m2_cog_mod.USER_MODE.val=", (int16_t)gMono2Coag.pCfg->varsayilan_mod);
     }
 
     if (true == bipolar_modKontrol(&gBipolar1Cut)) {
-        (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), "S12_b1_cut_mod.USER_MODE.val=", (int16_t)gBipolar1Cut.pCfg->varsayilan_mod);
+        (void)genx_sendNum(gNumBuff, sizeof(gNumBuff), "S12_b1_cut_mod.USER_MODE.val=", (int16_t)gBipolar1Cut.pCfg->varsayilan_mod);
     }
 
     if (true == bipolar_modKontrol(&gBipolar1Coag)) {
-        (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), "S13_b1_cog_mod.USER_MODE.val=", (int16_t)gBipolar1Coag.pCfg->varsayilan_mod);
+        (void)genx_sendNum(gNumBuff, sizeof(gNumBuff), "S13_b1_cog_mod.USER_MODE.val=", (int16_t)gBipolar1Coag.pCfg->varsayilan_mod);
     }
     
     if (true == bipolar_modKontrol(&gBipolar2Cut)) {
-        (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), "S16_b2_cut_mod.USER_MODE.val=", (int16_t)gBipolar2Cut.pCfg->varsayilan_mod);
+        (void)genx_sendNum(gNumBuff, sizeof(gNumBuff), "S16_b2_cut_mod.USER_MODE.val=", (int16_t)gBipolar2Cut.pCfg->varsayilan_mod);
     }
 
     if (true == bipolar_modKontrol(&gBipolar2Coag)) {
-        (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), "S17_b2_cog_mod.USER_MODE.val=", (int16_t)gBipolar2Coag.pCfg->varsayilan_mod);
+        (void)genx_sendNum(gNumBuff, sizeof(gNumBuff), "S17_b2_cog_mod.USER_MODE.val=", (int16_t)gBipolar2Coag.pCfg->varsayilan_mod);
     }
 }
 
@@ -855,7 +858,7 @@ static void touch_bipolarWattOk(Bipolar_Handle_t *pH) {
 
     (void)genx_getVarRetry(&pH->runtime.user_watt, pH->pCfg->pWattGetCmd, sizeof(pH->runtime.user_watt));
     touch_polGuncelle();
-    (void)genx_sendCmdRetry(pH->pCfg->pMainSetCmd);
+    (void)genx_sendCmd(pH->pCfg->pMainSetCmd);
     (void)genx_setPage(UI_PAGE_MAIN);
 }
 
@@ -880,9 +883,13 @@ static void touch_bipolarSayfaDonus(const Bipolar_Handle_t *pH) {
   */
 static bool touch_bipolarWattKontrol(const Bipolar_Handle_t *pH) {
 
-    const Bipolar_ModeInfo_t *pModBilgi = bipolar_modBul(pH->pCfg->function, pH->runtime.user_mode);
+    if (NULL == pH) {
+        return false;
+    }
 
-    if ((NULL == pH) || (NULL == pModBilgi)) {
+    const Bipolar_ModeInfo_t *pModBilgi = bipolar_modBul(pH->pCfg->function, pH->runtime.user_mode);
+    
+    if (NULL == pModBilgi) {
         return false;
     }
 

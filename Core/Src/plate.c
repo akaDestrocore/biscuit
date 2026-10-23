@@ -80,8 +80,6 @@ void plate_yonet(void) {
             
             gPlate100Overresistance = 1U;
         }
-
-        HAL_Delay(10U);
         
         if ((ohmYaz <= 99U) && (ohmYaz >= 10U) && (1U == gPlate100Overresistance) && (PLATE_DUAL == gPlate)) {
             
@@ -101,8 +99,6 @@ void plate_yonet(void) {
             dualToSingle = 0U;
         }
         
-        HAL_Delay(10U);
-        
         if ((ohmYaz <= 50U) && (1U == gPlate100Overresistance) && (PLATE_SINGLE == gPlate)) {
             
             gPlate100Overresistance = 0U;
@@ -114,7 +110,7 @@ void plate_yonet(void) {
             
             const char *pKomut;
 
-            HAL_Delay(10U);
+            genx_delay(10U);
             
             if (PLATE_DUAL == gPlate) {
                 
@@ -126,14 +122,14 @@ void plate_yonet(void) {
 
             if ((UI_PAGE_MAIN == gAcikSayfa) && ((gPlate != sonPlate) || (gPlate100Overresistance != sonAsiriDirenc))) {
                 
-                (void)genx_sendCmdRetry(pKomut);
+                (void)genx_sendCmd(pKomut);
                 sonPlate = gPlate;
                 sonAsiriDirenc = gPlate100Overresistance;
             }
 
             HAL_GPIO_WritePin(PLATE_LED_YESIL_GPIO_Port, PLATE_LED_YESIL_Pin, (1U == gPlate100Overresistance) ? GPIO_PIN_RESET : GPIO_PIN_SET);
             HAL_GPIO_WritePin(PLATE_LED_KIRMIZI_GPIO_Port, PLATE_LED_KIRMIZI_Pin, (1U == gPlate100Overresistance) ? GPIO_PIN_SET : GPIO_PIN_RESET);
-            HAL_Delay(10U);
+            genx_delay(10U);
         }
 
         // Plate hata sayfası
@@ -142,25 +138,20 @@ void plate_yonet(void) {
             gPlateError = 1U;
             (void)genx_setPage(UI_PAGE_ERROR);
             
-            HAL_Delay(100U);
-            
             if (PLATE_DUAL == gPlate) {
-                (void)genx_sendCmdRetry((0U == dualToSingle) ? "t0.txt=\"ERROR-01\"" : "t0.txt=\"ERROR-03\"");
+                (void)genx_sendCmd((0U == dualToSingle) ? "t0.txt=\"ERROR-01\"" : "t0.txt=\"ERROR-03\"");
             }
-            
-            HAL_Delay(50U);
             
             if (PLATE_SINGLE == gPlate) {
-                (void)genx_sendCmdRetry("t0.txt=\"ERROR-02\"");
+                (void)genx_sendCmd("t0.txt=\"ERROR-02\"");
             }
-            HAL_Delay(50U);
         }
 
         // Plate seçim sayfası
         if ((UI_PAGE_PLATE == gAcikSayfa) && (0U == gPlateError)) {
             
-            (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), "S18_plate_sec.n0.val=", (int16_t)ohmYaz);
-            HAL_Delay(10U);
+            (void)genx_sendNum(gNumBuff, sizeof(gNumBuff), "S18_plate_sec.n0.val=", (int16_t)ohmYaz);
+            genx_delay(10U);
 
             if ((PLATE_DUAL == gPlate) || (PLATE_SINGLE == gPlate)) {
                 
@@ -174,17 +165,17 @@ void plate_yonet(void) {
                 }
 
                 if (ohmPb <= 100U) {
-                    (void)genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), pPbKomut, (int16_t)ohmPb);
+                    (void)genx_sendNum(gNumBuff, sizeof(gNumBuff), pPbKomut, (int16_t)ohmPb);
                 }
 
-                HAL_Delay(1U);
+                genx_delay(1U);
                 
-                (void)genx_sendCmdRetry(pResim);
+                (void)genx_sendCmd(pResim);
 
                 HAL_GPIO_WritePin(PLATE_LED_YESIL_GPIO_Port, PLATE_LED_YESIL_Pin, (1U == gPlate100Overresistance) ? GPIO_PIN_RESET : GPIO_PIN_SET);
                 HAL_GPIO_WritePin(PLATE_LED_KIRMIZI_GPIO_Port, PLATE_LED_KIRMIZI_Pin, (1U == gPlate100Overresistance) ? GPIO_PIN_SET : GPIO_PIN_RESET);
                 
-                HAL_Delay(50U);
+                genx_delay(50U);
             }
         }
     }

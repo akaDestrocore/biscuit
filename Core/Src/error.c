@@ -29,8 +29,8 @@ void error_yonet(void) {
 
     static bool yazildiMi = false;
     
-    bool hata = (1U == gPedalError3) || (1U == gPedal2KezError) || (1U == gPwrKoruma) || (1U == gBiPwrKoruma) \
-                || (1U == gMonoPwrKoruma) || (1U == gBipolarKoruma) || (1U == gMono1Koruma) || (1U == gMono2Koruma);
+    bool hata = (1U == gPedalError3) || (1U == gPwrKoruma) || (1U == gBiPwrKoruma) || (1U == gMonoPwrKoruma) \
+                                    || (1U == gBipolarKoruma) || (1U == gMono1Koruma) || (1U == gMono2Koruma);
 
     if (false == hata) {
         
@@ -42,10 +42,6 @@ void error_yonet(void) {
         if (1U == gPedalError3) {
             
             error_show("t0.txt=\"ERROR-04\"");
-        
-        } else if (1U == gPedal2KezError) {
-            
-            error_show("t0.txt=\"ERROR-14\"");
         
         } else if (1U == gPwrKoruma) {
             
@@ -89,6 +85,5 @@ static void error_show(const char *pKomut) {
     genx_hepsiniDurdur();
 
     (void)genx_setPage(UI_PAGE_ERROR);
-    (void)genx_sendCmdRetry(pKomut);
-    HAL_Delay(100U);
+    (void)genx_sendCmd(pKomut);
 }

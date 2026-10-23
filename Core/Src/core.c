@@ -48,7 +48,6 @@ uint8_t gMonoPwrKoruma = 0U;
 uint8_t gPedalError3 = 0U;
 uint8_t gBipolarKoruma = 0U;
 uint8_t gBiPwrKoruma = 0U;
-uint8_t gPedal2KezError = 0U;
 
 // -- Kanal kaydı ve çıkış sahipliği ---------------------------
 static Core_Channel_t *gpChannels[CORE_MAX_CH];
@@ -100,7 +99,7 @@ void genx_dacUygula(float val) {
     }
 
     gDacVeri = (uint8_t)edge;
-    HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_8B_R, gDacVeri);
+    (void)HAL_DAC_SetValue(&hdac, DAC_CHANNEL_1, DAC_ALIGN_8B_R, gDacVeri);
 }
 
 /**
@@ -113,9 +112,8 @@ void genx_kanalUygula(Core_Channel_t *pCh) {
     if (NULL == pCh) {
         return;
     }
-    
-    if (gChannelCount < CORE_MAX_CH) {
 
+    if (gChannelCount < CORE_MAX_CH) {
         gpChannels[gChannelCount] = pCh;
         gChannelCount++;
     }
@@ -128,14 +126,14 @@ void genx_kanalUygula(Core_Channel_t *pCh) {
   */
 Genx_Status_t genx_sahiplendir(const Core_Channel_t *pSahip) {
 
-    Genx_Status_t result = GENX_ERROR;
+    Genx_Status_t status = GENX_ERROR;
 
     if ((NULL == gMutex) || (pSahip == gMutex)) {
         gMutex = pSahip;
-        result = GENX_SUCCESS;
+        status = GENX_SUCCESS;
     }
 
-    return result;
+    return status;
 }
 
 /**
@@ -183,7 +181,7 @@ void genx_muxSecimi(uint8_t ch) {
   */
 void genx_monoAc(uint16_t relayPin, uint8_t muxCh) {
 
-    HAL_TIM_PWM_Start(&htim13, TIM_CHANNEL_1); // PIN_A6 // 380KHz
+    (void)HAL_TIM_PWM_Start(&htim13, TIM_CHANNEL_1); // PIN_A6 // 380KHz
     HAL_GPIO_WritePin(BIPOLAR_ON_R_GPIO_Port, BIPOLAR_ON_R_Pin, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(MONO_KORUMA_GPIO_Port, MONO_KORUMA_Pin, GPIO_PIN_SET);
     
@@ -211,7 +209,7 @@ void genx_monoAc(uint16_t relayPin, uint8_t muxCh) {
   */
 void genx_bipolarAc(Bipolar_Mode_e mode) {
 
-    HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
+    (void)HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
     HAL_GPIO_WritePin(BIPOLAR_CUT_R_GPIO_Port, BIPOLAR_CUT_R_Pin, (BIPOLAR_MODE_CUT == mode) ? GPIO_PIN_SET : GPIO_PIN_RESET);
     HAL_GPIO_WritePin(BIPOLAR_ON_R_GPIO_Port, BIPOLAR_ON_R_Pin | PWR_ON_R_Pin, GPIO_PIN_SET);
     HAL_GPIO_WritePin(_74LS_R1_GPIO_Port, _74LS_R1_Pin, GPIO_PIN_SET);
@@ -232,7 +230,7 @@ void genx_bipolarKapat(void) {
     HAL_GPIO_WritePin(_74LS_R2_GPIO_Port, _74LS_R2_Pin, GPIO_PIN_RESET);
     genx_muxSecimi(0U);
     HAL_GPIO_WritePin(FAN_R_GPIO_Port, FAN_R_Pin, GPIO_PIN_RESET);
-    HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_1);
+    (void)HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_1);
 }
 
 #endif /* (1 == BIPOLAR1_CUT_EN_CUTTING) || (1 == BIPOLAR2_CUT_EN_CUTTING) || (1 == BIPOLAR1_COAG_EN_STANDARD) || (1 == BIPOLAR2_COAG_EN_STANDARD) \
@@ -256,9 +254,9 @@ void genx_serbestBirak(const Core_Channel_t *pSahip) {
   * @param pCnt Sayaç değişkenine işaretçi
   * @retval true sayaç bitti, false henüz bitmedi
   */
-bool genx_sayacBittiMi(bool kosul, uint8_t *pCnt) {
+Genx_Status_t genx_sayacBittiMi(bool kosul, uint8_t *pCnt) {
 
-    bool bitti = false;
+    Genx_Status_t status = GENX_ERROR;
 
     if (true == kosul) {
         
@@ -266,11 +264,11 @@ bool genx_sayacBittiMi(bool kosul, uint8_t *pCnt) {
 
         if (200U <= *pCnt) {
             *pCnt = 0U;
-            bitti = true;
+            status = GENX_SUCCESS;
         }
     }
 
-    return bitti;
+    return status;
 }
 
 /**
@@ -309,11 +307,11 @@ void genx_hepsiniDurdur(void) {
 }
 
 /**
-  * @brief Yüksek güç kaynağı voltajını, çıkış sahipliği alındıktan en az 80 ms sonra okur
+  * @brief Yüksek güç kaynağı gerilimini, çıkış sahipliği alındıktan en az 80 ms sonra okur
   * @retval None
   * @note Yeni değer varsa bu çağrı için gPwrYeni = true olur
   */
-void genx_PwrDegeriVer(void) {
+void genx_PwrDegeriniOku(void) {
 
     static uint32_t sonTik = 0U;
     static bool zatenAktif = false;
@@ -335,43 +333,54 @@ void genx_PwrDegeriVer(void) {
 }
 
 /**
-  * @brief NEXTION metin komutunu ACK gelene kadar en fazla NEXTION_MAX_DENEME kez gönderir
+  *  @brief NEXTION metin komutunu kuyruğa alır, kuyruk doluysa GENX_KUYRUK_BEKLE_MS boyunca 
+  *         sürücüyü çalıştırıp tekrar dener
   * @param pCmd Gönderilecek olan metin komutu
-  * @retval NEXTION_STATUS_OK, zaman aşımında NEXTION_STATUS_TIMEOUT, aksi halde kuyruk hata kodu
+  * @retval NEXTION_STATUS_OK, kuyruk dolu kalırsa NEXTION_STATUS_QUEUE_FULL, aksi halde kuyruk hata kodu
   */
-Genx_Status_t genx_sendCmdRetry(const char *pCmd) {
+Genx_Status_t genx_sendCmd(const char *pCmd) {
 
-    Genx_Status_t status = (Genx_Status_t)NEXTION_STATUS_TIMEOUT;
-    uint8_t attempt = 0U;
+    Genx_Status_t status;
+    uint32_t startTick = HAL_GetTick();
 
     do {
-        status = (Genx_Status_t)nextion_sendCmdBlocking(pCmd, NEXTION_TIMEOUT_MS);
-        attempt++;
-    } while (((Genx_Status_t)NEXTION_STATUS_TIMEOUT == status) && (attempt < NEXTION_MAX_DENEME));
+        status = (Genx_Status_t)nextion_sendCmd(pCmd);
 
+        if ((Genx_Status_t)NEXTION_STATUS_QUEUE_FULL == status) {
+            nextion_process();
+        }
+
+    } while (((Genx_Status_t)NEXTION_STATUS_QUEUE_FULL == status) && ((HAL_GetTick() - startTick) < GENX_KUYRUK_BEKLE_MS));
+ 
     return status;
 }
 
 /**
-  * @brief NEXTION sayı içeren komutu ACK gelene kadar en fazla NEXTION_MAX_DENEME kez gönderir
+  * @brief NEXTION sayı içeren komutu kuyruğa alır, kuyruk doluysa GENX_KUYRUK_BEKLE_MS boyunca 
+  *         sürücüyü çalıştırıp tekrar dener
   * @param pBuf Metin önek ve sayıyı içerecek buffer
   * @param bufSize Bufferın tam boyutu
   * @param pPrefix Önek satır metni
   * @param num Komuttaki sayı
-  * @retval NEXTION_STATUS_OK, zaman aşımında NEXTION_STATUS_TIMEOUT, aksi halde kuyruk hata kodu
+  * @retval NEXTION_STATUS_OK, kuyruk dolu kalırsa NEXTION_STATUS_QUEUE_FULL, aksi halde kuyruk hata kodu
   */
-Genx_Status_t genx_sendNumRetry(char *pBuf, uint32_t bufSize, const char *pPrefix, int16_t num) {
+Genx_Status_t genx_sendNum(char *pBuf, uint32_t bufSize, const char *pPrefix, int16_t num) {
 
-    Genx_Status_t status = (Genx_Status_t)NEXTION_STATUS_TIMEOUT;
-    uint8_t attempt = 0U;
+    Genx_Status_t status;
+    uint32_t startTick = HAL_GetTick();
 
     do {
-        status = (Genx_Status_t)nextion_sendNumBlocking(pBuf, bufSize, pPrefix, num, NEXTION_TIMEOUT_MS);
-        attempt++;
-    } while (((Genx_Status_t)NEXTION_STATUS_TIMEOUT == status) && (attempt < NEXTION_MAX_DENEME));
+        status = (Genx_Status_t)nextion_sendNum(pBuf, bufSize, pPrefix, num);
+        
+        if ((Genx_Status_t)NEXTION_STATUS_QUEUE_FULL == status) {
+            nextion_process();
+        }
 
-    return status;
+    } while (((Genx_Status_t)NEXTION_STATUS_QUEUE_FULL == status) && ((HAL_GetTick() - startTick) < GENX_KUYRUK_BEKLE_MS));
+ 
+     return status;
 }
+
 
 /**
   * @brief NEXTION değişken değerini en fazla NEXTION_MAX_DENEME kez sorgular
@@ -400,11 +409,25 @@ Genx_Status_t genx_getVarRetry(void *pDst, const char *pCmd, uint16_t size) {
   */
 Genx_Status_t genx_setPage(uint16_t page) {
 
-    Genx_Status_t status = genx_sendNumRetry(gNumBuff, sizeof(gNumBuff), "page ", (int16_t)page);
+    Genx_Status_t status = genx_sendNum(gNumBuff, sizeof(gNumBuff), "page ", (int16_t)page);
 
     if ((Genx_Status_t)NEXTION_STATUS_OK == status) {
         gAcikSayfa = (UI_Page_e)page;
     }
 
     return status;
+}
+
+/**
+  * @brief Belirtilen süre boyunca bekler, bu sırada Nextion durum makinesini çalıştırır
+  * @param ms Bekleme süresi (ms)
+  * @retval None
+  */
+void genx_delay(uint32_t ms) {
+
+    uint32_t startTick = HAL_GetTick();
+
+    while ((HAL_GetTick() - startTick) < ms) {
+        nextion_process();
+    }
 }

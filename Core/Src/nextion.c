@@ -280,34 +280,6 @@ Nextion_Status_e nextion_sendNum(char *pBuf, uint32_t bufSize, const char *pPref
 }
 
 /**
- * @brief pBuf'ı doldurur, sıraya alır ve `nextion_process()` işlevini yoklayarak, 
- *      tamamlanana veya zaman aşımı süresi dolana kadar bloklar.
- * @param pBuf Yazılabilir lokal buffer
- * @param bufSize pBuf'ın toplam boyutu (bayt cinsinden)
- * @param pPrefix NULL ile sonlandırılmış komut öneki
- * @param num Eklenecek işaretli sayı
- * @param timeoutMs Bekleme süresi
- * @retval ACK başarısında `NEXTION_STATUS_OK`, zaman aşımında `NEXTION_STATUS_TIMEOUT`
- *         veya aksi takdirde sıraya alma hata kodu
- */
-Nextion_Status_e nextion_sendNumBlocking(char *pBuf, uint32_t bufSize, const char *pPrefix, int16_t num, uint32_t timeoutMs) {
-
-    Nextion_Status_e status;
-    Nextion_Frame_t ownFrame;
-
-    status = nextion_sendNum(pBuf, bufSize, pPrefix, num);
-    if (NEXTION_STATUS_OK != status) {
-        return status;
-    }
-
-    status = nextion_waitBusy(timeoutMs);
-
-    (void)nextion_takeRespFrame(&ownFrame);
-
-    return status;
-}
-
-/**
  * @brief Sürücünün bekleyen herhangi bir işi olup olmadığını döndürür
  * @retval Sürücü IDLE durumunda değilse veya komut tail'i boş değilse `true` döndürür
  */
@@ -929,10 +901,6 @@ static bool nextion_frameQueueIsEmpty(void) {
  * @brief RX buffer'dan tamamlanmış frame'i çıkarır ve sınıflandırır.
  * @retval None
  */
-/**
- * @brief RX buffer'dan tamamlanmış frame'i çıkarır ve sınıflandırır.
- * @retval None
- */
 static void nextion_storeFrameFromRxBuffer(void) {
 
     Nextion_Frame_t frame;
@@ -1079,6 +1047,7 @@ static bool nextion_startTx(void)
     // gTxBusy bayrağı TXEIE biti setlenmeden önce setlenmelidir aksi halde IDLE geçişinin kaçırmasına neden olur
     gTxBusy = true;
     gAckReceived = false;
+    gRespFramePending = false;
     gLastCommandStatus = NEXTION_STATUS_BUSY;
     gConfig.pUsart->CR1 |= USART_CR1_TXEIE;
 

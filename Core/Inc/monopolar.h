@@ -54,6 +54,43 @@ typedef enum {
     MONOPOLAR_DURUM_AKTIF   = 1U
 } Monopolar_State_e;
 
+/* ============================================================
+ * Mod açma/kapama maskeleri
+ * ============================================================*/
+
+#define MONO1_CUT_MASK ( MODE_BIT(MONOPOLAR_CUTMODE_CUT, MONO1_CUT_EN_CUT) \
+                        | MODE_BIT(MONOPOLAR_CUTMODE_BLEND1, MONO1_CUT_EN_BLEND1) \
+                        | MODE_BIT(MONOPOLAR_CUTMODE_BLEND2, MONO1_CUT_EN_BLEND2) \
+                        | MODE_BIT(MONOPOLAR_CUTMODE_BLEND3, MONO1_CUT_EN_BLEND3) \
+                        | MODE_BIT(MONOPOLAR_CUTMODE_POLYPECTOMY, MONO1_CUT_EN_POLYPECTOMY) \
+                        | MODE_BIT(MONOPOLAR_CUTMODE_PAPILLOTOMES, MONO1_CUT_EN_PAPILLOTOMES) \
+                        | MODE_BIT(MONOPOLAR_CUTMODE_RESECTION1, MONO1_CUT_EN_RESECTION1) \
+                        | MODE_BIT(MONOPOLAR_CUTMODE_RESECTION2, MONO1_CUT_EN_RESECTION2) )
+
+
+#define MONO2_CUT_MASK ( MODE_BIT(MONOPOLAR_CUTMODE_CUT, MONO2_CUT_EN_CUT) \
+                        | MODE_BIT(MONOPOLAR_CUTMODE_BLEND1, MONO2_CUT_EN_BLEND1) \
+                        | MODE_BIT(MONOPOLAR_CUTMODE_BLEND2, MONO2_CUT_EN_BLEND2) \
+                        | MODE_BIT(MONOPOLAR_CUTMODE_BLEND3, MONO2_CUT_EN_BLEND3) \
+                        | MODE_BIT(MONOPOLAR_CUTMODE_POLYPECTOMY, MONO2_CUT_EN_POLYPECTOMY) \
+                        | MODE_BIT(MONOPOLAR_CUTMODE_PAPILLOTOMES, MONO2_CUT_EN_PAPILLOTOMES) \
+                        | MODE_BIT(MONOPOLAR_CUTMODE_RESECTION1, MONO2_CUT_EN_RESECTION1) \
+                        | MODE_BIT(MONOPOLAR_CUTMODE_RESECTION2, MONO2_CUT_EN_RESECTION2) )
+
+
+#define MONO1_COAG_MASK ( MODE_BIT(MONOPOLAR_COAGMODE_CONTACT, MONO1_COAG_EN_CONTACT) \
+                        | MODE_BIT(MONOPOLAR_COAGMODE_SPRAY1, MONO1_COAG_EN_SPRAY1) \
+                        | MODE_BIT(MONOPOLAR_COAGMODE_SPRAY2, MONO1_COAG_EN_SPRAY2) \
+                        | MODE_BIT(MONOPOLAR_COAGMODE_SPRAY3, MONO1_COAG_EN_SPRAY3) \
+                        | MODE_BIT(MONOPOLAR_COAGMODE_FULGURATION, MONO1_COAG_EN_FULGURATION) )
+
+
+#define MONO2_COAG_MASK ( MODE_BIT(MONOPOLAR_COAGMODE_CONTACT, MONO2_COAG_EN_CONTACT) \
+                        | MODE_BIT(MONOPOLAR_COAGMODE_SPRAY1, MONO2_COAG_EN_SPRAY1) \
+                        | MODE_BIT(MONOPOLAR_COAGMODE_SPRAY2, MONO2_COAG_EN_SPRAY2) \
+                        | MODE_BIT(MONOPOLAR_COAGMODE_SPRAY3, MONO2_COAG_EN_SPRAY3) \
+                        | MODE_BIT(MONOPOLAR_COAGMODE_FULGURATION, MONO2_COAG_EN_FULGURATION) )
+
 /* =========================================================================
  * Handle yapıları
  * ========================================================================= */

@@ -57,7 +57,7 @@ void input_yonet(void) {
                     && (0U == gMono1Pedal) && (0U == gMono2Pedal) \
                     && (0U == gBipolar1PedalCift) && (0U == gBipolar2PedalCift) && (0U == gAlarmPlate) && (0U == gPedalError3);
 
-        if (true == genx_sayacBittiMi(basildi && izinVerildi, &gPedalError2Burst)) {
+        if (GENX_SUCCESS == genx_sayacBittiMi(basildi && izinVerildi, &gPedalError2Burst)) {
             gPedalError3 = 1U;
         }
     }
@@ -94,12 +94,12 @@ static void input_bipolarTara(void) {
     // -- Bipolar1 CUT ---------------------------------------
     izinVerildi = (false == genx_baskaAktifVarMi(NULL));
 
-    if (true == genx_sayacBittiMi(BIPOLAR1_CUT_AYAK_BASILI() && izinVerildi, &pB1Cut->basma)) {
+    if (GENX_SUCCESS == genx_sayacBittiMi(BIPOLAR1_CUT_AYAK_BASILI() && izinVerildi, &pB1Cut->basma)) {
         pB1Cut->birakma = 0U;
         pB1Cut->genel.start = 1U;
     }
 
-    if (true == genx_sayacBittiMi(BIPOLAR1_CUT_AYAK_SERBEST() && (1U == pB1Cut->genel.start), &pB1Cut->birakma)) {
+    if (GENX_SUCCESS == genx_sayacBittiMi(BIPOLAR1_CUT_AYAK_SERBEST() && (1U == pB1Cut->genel.start), &pB1Cut->birakma)) {
         pB1Cut->basma = 0U;
         pB1Cut->genel.start = 0U;
     }
@@ -111,7 +111,7 @@ static void input_bipolarTara(void) {
 
     const Bipolar_ModeInfo_t *pModBilgi = bipolar_modBul(gBipolar1Coag.pCfg->function, gBipolar1Coag.runtime.user_mode);
 
-    if (true == genx_sayacBittiMi(BIPOLAR1_COAG_AYAK_BASILI() && izinVerildi, &pB1Coag->basma)) {
+    if (GENX_SUCCESS == genx_sayacBittiMi(BIPOLAR1_COAG_AYAK_BASILI() && izinVerildi, &pB1Coag->basma)) {
         pB1Coag->birakma = 0U;
         pB1Coag->genel.start = 1U;
         gAutoStopCiftPedal = 1U;
@@ -121,7 +121,7 @@ static void input_bipolarTara(void) {
         }
     }
 
-    if (true == genx_sayacBittiMi(BIPOLAR1_COAG_AYAK_SERBEST() && modAktif, &pB1Coag->birakma)) {
+    if (GENX_SUCCESS == genx_sayacBittiMi(BIPOLAR1_COAG_AYAK_SERBEST() && modAktif, &pB1Coag->birakma)) {
         pB1Coag->basma = 0U;
         pB1Coag->genel.start = 0U;
         gAutoStopCiftPedal = 0U;
@@ -134,12 +134,12 @@ static void input_bipolarTara(void) {
     // -- Bipolar2 CUT ---------------------------------------
     izinVerildi = (false == genx_baskaAktifVarMi(NULL));
 
-    if (true == genx_sayacBittiMi(BIPOLAR2_CUT_LIGASURE_AYAK_BASILI() && izinVerildi, &pB2Cut->basma)) {
+    if (GENX_SUCCESS == genx_sayacBittiMi(BIPOLAR2_CUT_LIGASURE_AYAK_BASILI() && izinVerildi, &pB2Cut->basma)) {
         pB2Cut->birakma = 0U;
         pB2Cut->genel.start = 1U;
     }
 
-    if (true == genx_sayacBittiMi(BIPOLAR2_CUT_LIGASURE_AYAK_SERBEST() && (1U == pB2Cut->genel.start), &pB2Cut->birakma)) {
+    if (GENX_SUCCESS == genx_sayacBittiMi(BIPOLAR2_CUT_LIGASURE_AYAK_SERBEST() && (1U == pB2Cut->genel.start), &pB2Cut->birakma)) {
         pB2Cut->basma = 0U;
         pB2Cut->genel.start = 0U;
     }
@@ -151,7 +151,7 @@ static void input_bipolarTara(void) {
 
     pModBilgi = bipolar_modBul(gBipolar2Coag.pCfg->function, gBipolar2Coag.runtime.user_mode);
                 
-    if (true == genx_sayacBittiMi(BIPOLAR2_COAG_LIGASURE_AYAK_BASILI() && izinVerildi, &pB2Coag->basma)) {
+    if (GENX_SUCCESS == genx_sayacBittiMi(BIPOLAR2_COAG_LIGASURE_AYAK_BASILI() && izinVerildi, &pB2Coag->basma)) {
 
         pB2Coag->birakma = 0U;
         pB2Coag->genel.start = 1U;
@@ -162,7 +162,7 @@ static void input_bipolarTara(void) {
         }
     }
 
-    if (true == genx_sayacBittiMi(BIPOLAR2_COAG_LIGASURE_AYAK_SERBEST() && modAktif, &pB2Coag->birakma)) {
+    if (GENX_SUCCESS == genx_sayacBittiMi(BIPOLAR2_COAG_LIGASURE_AYAK_SERBEST() && modAktif, &pB2Coag->birakma)) {
         pB2Coag->basma = 0U;
         pB2Coag->genel.start = 0U;
         gAutoStopCiftPedal = 0U;
@@ -176,13 +176,13 @@ static void input_bipolarTara(void) {
     izinVerildi = (false == genx_baskaAktifVarMi(NULL)) && (0U == gAutoStopTekPedal) && (0U == gBipolarHand);
     modAktif = (1U == pB1Coag->genel.start) && (1U == gAutoStopTekPedal) && (0U == gBipolarHand);
 
-    if (true == genx_sayacBittiMi(BIPOLAR_TEK_PEDAL_BASILI() && izinVerildi, &gTekPedalBasma)) {
+    if (GENX_SUCCESS == genx_sayacBittiMi(BIPOLAR_TEK_PEDAL_BASILI() && izinVerildi, &gTekPedalBasma)) {
         gTekPedalBirakma = 0U;
         pB1Coag->genel.start = 1U;
         gAutoStopTekPedal = 1U;
     }
 
-    if (true == genx_sayacBittiMi(BIPOLAR_TEK_PEDAL_SERBEST() && modAktif, &gTekPedalBirakma)) {
+    if (GENX_SUCCESS == genx_sayacBittiMi(BIPOLAR_TEK_PEDAL_SERBEST() && modAktif, &gTekPedalBirakma)) {
         gTekPedalBasma = 0U;
         pB1Coag->genel.start = 0U;
         gAutoStopTekPedal = 0U;
@@ -202,7 +202,7 @@ static void input_bipolarTara(void) {
     }
 
 
-    if (true == genx_sayacBittiMi(BIPOLAR_HAND_BASILI() && izinVerildi, &gHandBasma)) {
+    if (GENX_SUCCESS == genx_sayacBittiMi(BIPOLAR_HAND_BASILI() && izinVerildi, &gHandBasma)) {
 
         gHandBirakma = 0U;
 
@@ -216,7 +216,7 @@ static void input_bipolarTara(void) {
         }
     }
 
-    if (true == genx_sayacBittiMi(BIPOLAR_HAND_SERBEST() && modAktif, &gHandBirakma)) {
+    if (GENX_SUCCESS == genx_sayacBittiMi(BIPOLAR_HAND_SERBEST() && modAktif, &gHandBirakma)) {
 
         gHandBasma = 0U;
 

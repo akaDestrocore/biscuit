@@ -84,7 +84,7 @@ static void MX_TIM5_Init(void);
   */
 static void NEXTION_Init(void) {
 
-	nextion.pUsart = USART3;
+	  nextion.pUsart = USART3;
     nextion.pGpio_port = GPIOB;
     nextion.rx_pin_num = 11U;
     nextion.tx_pin_num = 10U;
@@ -93,7 +93,7 @@ static void NEXTION_Init(void) {
     nextion.apbx_bit = RCC_APB1ENR_USART3EN;
     nextion.is_apb2 = 0U;
     nextion.apb_freq_hz = HAL_RCC_GetPCLK1Freq();
-    nextion.baud_rate = 230400U;
+    nextion.baud_rate = 115200U;
     nextion.irqn = USART3_IRQn;
     nextion.nvic_priority = 8U;
     nextion.ack_timeout_ms = NEXTION_TIMEOUT_MS;
@@ -207,13 +207,13 @@ int main(void)
   MX_TIM5_Init();
   /* USER CODE BEGIN 2 */
     HAL_TIM_PWM_Stop(&htim13, TIM_CHANNEL_1);
-	__HAL_TIM_SET_COMPARE(&htim13, TIM_CHANNEL_1,5);    // 400Khz
+	__HAL_TIM_SET_COMPARE(&htim13, TIM_CHANNEL_1,5U);    // 400Khz
 	//
 	HAL_TIM_PWM_Stop(&htim2, TIM_CHANNEL_1);
-	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1,127);   // 33Khz
+	__HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1,127U);   // 33Khz
 	//
 	HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_1);
-	__HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1,4);     // 500
+	__HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_1,4U);     // 500
 	//
 	HAL_TIM_PWM_Stop(&htim9, TIM_CHANNEL_2);
 	__HAL_TIM_SET_COMPARE(&htim9, TIM_CHANNEL_2,300U);  // 600Hz
@@ -248,7 +248,7 @@ int main(void)
 
     (void)HAL_ADC_Start_DMA(&hadc1, (uint32_t *)gAdc1DmaBuff, ADC_CH_COUNT);
 
-	selftest();
+	// selftest();
 
     monopolar_init();
     bipolar_init();
@@ -261,7 +261,7 @@ int main(void)
         error_yonet();
         touch_yonet();
         input_yonet();
-        genx_PwrDegeriVer();
+        genx_PwrDegeriniOku();
         monopolar_yonet();
         bipolar_yonet();
     /* USER CODE END WHILE */
@@ -769,7 +769,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, VOLUME_2_Pin|MONO2_LED_MAVI_Pin|MONO1_LED_MAVI_Pin|_74LS_R1_Pin
-                          |MONO2_LED_SARI_Pin, GPIO_PIN_RESET);
+                          |MONO2_LED_SARI_Pin|MULTIPLEXER_S_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, PWR_ON_R_Pin|FAN_R_Pin|_74LS_R2_Pin|BIPOLAR_ON_R_Pin
@@ -809,9 +809,9 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : VOLUME_2_Pin MONO2_LED_MAVI_Pin MONO1_LED_MAVI_Pin _74LS_R1_Pin
-                           MONO2_LED_SARI_Pin */
+                           MONO2_LED_SARI_Pin MULTIPLEXER_S_Pin */
   GPIO_InitStruct.Pin = VOLUME_2_Pin|MONO2_LED_MAVI_Pin|MONO1_LED_MAVI_Pin|_74LS_R1_Pin
-                          |MONO2_LED_SARI_Pin;
+                          |MONO2_LED_SARI_Pin|MULTIPLEXER_S_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -843,8 +843,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : MONO1_KALEM_COAG_Pin MONO2_KALEM_COAG_Pin MONO2_KALEM_CUT_Pin MONO1_KALEM_CUT_Pin */
-  GPIO_InitStruct.Pin = MONO1_KALEM_COAG_Pin|MONO2_KALEM_COAG_Pin|MONO2_KALEM_CUT_Pin|MONO1_KALEM_CUT_Pin;
+  /*Configure GPIO pins : MONO2_KALEM_COAG_Pin MONO1_KALEM_COAG_Pin MONO2_KALEM_CUT_Pin MONO1_KALEM_CUT_Pin */
+  GPIO_InitStruct.Pin = MONO2_KALEM_COAG_Pin|MONO1_KALEM_COAG_Pin|MONO2_KALEM_CUT_Pin|MONO1_KALEM_CUT_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);

@@ -63,7 +63,7 @@
  * 
  *          Bloklayıcı Fonksiyonlar:
  * 
- *          `nextion_sendNumBlocking()` ve `nextion_getVarBlocking()` fonksiyonları, `nextion_waitBusy()` üzerinden 
+ *          `nextion_getVarBlocking()` fonksiyonu, `nextion_waitBusy()` üzerinden 
  *          bir döngü içerisinde `nextion_process()` fonksiyonunu sürekli çağırarak çalışır. Durum makinesi tekrar 
  *          `IDLE` durumuna dönene veya belirtilen bekleme süresi dolana kadar çağıran kod bloklanır.
  * 
@@ -86,7 +86,7 @@ extern "C" {
  * Ring buffer ayarları
  * ============================================================*/
 #define NEXTION_RING_BUFF_SIZE      256U
-#define NEXTION_CMD_QUEUE_DEPTH     8U
+#define NEXTION_CMD_QUEUE_DEPTH     16U
 #define NEXTION_CMD_MAX_LEN         64U
 #define NEXTION_FRAME_QUEUE_DEPTH   8U
 #define NEXTION_RX_FRAME_MAX_LEN    256U
@@ -227,19 +227,6 @@ Nextion_Status_e nextion_sendCmdBlocking(const char *pCmd, uint32_t timeoutMs);
  *      `NEXTION_STATUS_INVALID_PARAM` veya `NEXTION_STATUS_QUEUE_FULL`
  */
 Nextion_Status_e nextion_sendNum(char *pBuf, uint32_t bufSize, const char *pPrefix, int16_t num);
-
-/**
- * @brief pBuf'ı doldurur, sıraya alır ve `nextion_process()` işlevini yoklayarak,
- *     tamamlanana veya zaman aşımı süresi dolana kadar bloklar.
- * @param pBuf Yazılabilir lokal buffer
- * @param bufSize pBuf'ın toplam boyutu (bayt cinsinden)
- * @param pPrefix NULL ile sonlandırılmış, salt okunur komut öneki
- * @param num Eklenecek işaretli sayı
- * @param timeoutMs Bekleme süresi
- * @retval ACK başarısında `NEXTION_STATUS_OK`, zaman aşımında `NEXTION_STATUS_TIMEOUT`
- *         veya aksi takdirde kuyruk/sıraya alma hata kodu
- */
-Nextion_Status_e nextion_sendNumBlocking(char *pBuf, uint32_t bufSize, const char *pPrefix, int16_t num, uint32_t timeoutMs);
 
 /**
  * @brief Sürücünün bekleyen herhangi bir işi olup olmadığını döndürür

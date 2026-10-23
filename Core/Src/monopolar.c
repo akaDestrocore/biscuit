@@ -14,43 +14,6 @@
 
 #include "genx.h"
 
-/* ============================================================
- * Mod açma/kapama maskeleri
- * ============================================================*/
-
-#define MONO1_CUT_MASK ( MODE_BIT(MONOPOLAR_CUTMODE_CUT, MONO1_CUT_EN_CUT) \
-                        | MODE_BIT(MONOPOLAR_CUTMODE_BLEND1, MONO1_CUT_EN_BLEND1) \
-                        | MODE_BIT(MONOPOLAR_CUTMODE_BLEND2, MONO1_CUT_EN_BLEND2) \
-                        | MODE_BIT(MONOPOLAR_CUTMODE_BLEND3, MONO1_CUT_EN_BLEND3) \
-                        | MODE_BIT(MONOPOLAR_CUTMODE_POLYPECTOMY, MONO1_CUT_EN_POLYPECTOMY) \
-                        | MODE_BIT(MONOPOLAR_CUTMODE_PAPILLOTOMES, MONO1_CUT_EN_PAPILLOTOMES) \
-                        | MODE_BIT(MONOPOLAR_CUTMODE_RESECTION1, MONO1_CUT_EN_RESECTION1) \
-                        | MODE_BIT(MONOPOLAR_CUTMODE_RESECTION2, MONO1_CUT_EN_RESECTION2) )
-
-
-#define MONO2_CUT_MASK ( MODE_BIT(MONOPOLAR_CUTMODE_CUT, MONO2_CUT_EN_CUT) \
-                        | MODE_BIT(MONOPOLAR_CUTMODE_BLEND1, MONO2_CUT_EN_BLEND1) \
-                        | MODE_BIT(MONOPOLAR_CUTMODE_BLEND2, MONO2_CUT_EN_BLEND2) \
-                        | MODE_BIT(MONOPOLAR_CUTMODE_BLEND3, MONO2_CUT_EN_BLEND3) \
-                        | MODE_BIT(MONOPOLAR_CUTMODE_POLYPECTOMY, MONO2_CUT_EN_POLYPECTOMY) \
-                        | MODE_BIT(MONOPOLAR_CUTMODE_PAPILLOTOMES, MONO2_CUT_EN_PAPILLOTOMES) \
-                        | MODE_BIT(MONOPOLAR_CUTMODE_RESECTION1, MONO2_CUT_EN_RESECTION1) \
-                        | MODE_BIT(MONOPOLAR_CUTMODE_RESECTION2, MONO2_CUT_EN_RESECTION2) )
-
-
-#define MONO1_COAG_MASK ( MODE_BIT(MONOPOLAR_COAGMODE_CONTACT, MONO1_COAG_EN_CONTACT) \
-                        | MODE_BIT(MONOPOLAR_COAGMODE_SPRAY1, MONO1_COAG_EN_SPRAY1) \
-                        | MODE_BIT(MONOPOLAR_COAGMODE_SPRAY2, MONO1_COAG_EN_SPRAY2) \
-                        | MODE_BIT(MONOPOLAR_COAGMODE_SPRAY3, MONO1_COAG_EN_SPRAY3) \
-                        | MODE_BIT(MONOPOLAR_COAGMODE_FULGURATION, MONO1_COAG_EN_FULGURATION) )
-
-
-#define MONO2_COAG_MASK ( MODE_BIT(MONOPOLAR_COAGMODE_CONTACT, MONO2_COAG_EN_CONTACT) \
-                        | MODE_BIT(MONOPOLAR_COAGMODE_SPRAY1, MONO2_COAG_EN_SPRAY1) \
-                        | MODE_BIT(MONOPOLAR_COAGMODE_SPRAY2, MONO2_COAG_EN_SPRAY2) \
-                        | MODE_BIT(MONOPOLAR_COAGMODE_SPRAY3, MONO2_COAG_EN_SPRAY3) \
-                        | MODE_BIT(MONOPOLAR_COAGMODE_FULGURATION, MONO2_COAG_EN_FULGURATION) )
-
 // Varsayılan modların kapatılması halinde
 #if (0U == MONO1_CUT_EN_CUT) || (0U == MONO2_CUT_EN_CUT)
 #error "MONO CUT: CUT kapatildi"
@@ -261,7 +224,7 @@ static void monopolar_stopCoag(Monopolar_Handle_t *pH);
     static void monopolar_coagSpray2(Monopolar_Handle_t *pH);
 #endif
 
-#if (0 != MONO1_COAG_EN_SPRAY3) || (0 != MONO2_COAG_EN_SPRAY3)
+#if (0 != MONO1_COAG_EN_SPRAY3) || (0 != MONO2_COAG_EN_SPRAY3) || (0 != MONO1_COAG_EN_FULGURATION) || (0 != MONO2_COAG_EN_FULGURATION)
     static void monopolar_coagSpray3(Monopolar_Handle_t *pH);
 #endif
 
@@ -342,7 +305,7 @@ void monopolar_girisTara(Monopolar_Handle_t *pH) {
     bool basildi = kalem || pedal;
     bool kilitli = (1U == pRt->hata) && ((1U == pRt->genel.start) || (1U == gAlarmPlate));
 
-    if (true == genx_sayacBittiMi((true != basildi) && (true == kilitli), &pRt->birakma)) {
+    if (GENX_SUCCESS == genx_sayacBittiMi((true != basildi) && (true == kilitli), &pRt->birakma)) {
         
         pRt->basma = 0U;
         pRt->hata = 0U;
@@ -353,7 +316,7 @@ void monopolar_girisTara(Monopolar_Handle_t *pH) {
         }
     }
 
-    if (true == genx_sayacBittiMi((true == basildi) && (false == genx_baskaAktifVarMi(&pRt->genel)), &pRt->basma)) {
+    if (GENX_SUCCESS == genx_sayacBittiMi((true == basildi) && (false == genx_baskaAktifVarMi(&pRt->genel)), &pRt->basma)) {
         
         pRt->birakma = 0U;
         pRt->hata = 1U;
@@ -480,7 +443,6 @@ void monopolar_polHesap(Monopolar_Handle_t *pH) {
   */
 void monopolar_endoHesap(const Monopolar_Handle_t *pH) {
 
-    uint32_t cutTicks;
     uint32_t mode = pH->runtime.user_mode;
 
     if ((gEndoCutKademe >= 1U) && (gEndoCutKademe <= 7U)) {
@@ -509,23 +471,21 @@ void monopolar_endoHesap(const Monopolar_Handle_t *pH) {
         }
     }
 
-    cutTicks = gEndoCutSure;
-    
-    if (cutTicks < 6U) {
+    if (gEndoCutSure < 3U) {
         
-        cutTicks = cutTicks + 2U;
+        gEndoCutSure = 3U;
     }
 
-    if (cutTicks > 5U) {
+    if (gEndoCutSure > 5U) {
         
-        cutTicks = 5U;
+        gEndoCutSure = 5U;
     }
 
-    gEndoCutTicks = cutTicks;
+    gEndoCutTicks = gEndoCutSure;
 
-    if ((gEndoCoagSure >= 1U) && (gEndoCoagSure <= 15U)) {
+    if ((gEndoCoagSure >= 10U) && (gEndoCoagSure <= 150U)) {
         
-        gEndoCoagTimer = (uint16_t)(gEndoCoagSure * 10U);
+        gEndoCoagTimer = (uint16_t)(gEndoCoagSure);
     }
 }
 #endif /* (0 != MONO1_CUT_EN_POLYPECTOMY) || (0 != MONO1_CUT_EN_PAPILLOTOMES) */
@@ -693,7 +653,7 @@ static void monopolar_cutCut(Monopolar_Handle_t *pH) {
             uint32_t guc = gAdc1DmaBuff[ADC_CH_MONO_PWR];
 
             pRt->guc_gecikme = 0U;
-            HAL_Delay(20U);
+            genx_delay(20U);
 
             if ((1U == pRt->yuz_start) && (guc > 70U)) {
                 float x = pRt->pol;
@@ -732,7 +692,7 @@ static bool monopolar_cikisBaslat(Monopolar_Handle_t *pH, uint16_t pwmCCR) {
 
     if (GENX_ERROR != genx_sahiplendir(&pH->runtime.genel)) {
         
-        (void)genx_sendCmdRetry("tsw 255,0");
+        (void)genx_sendCmd("tsw 255,0");
 
         if (0U == pwmCCR) {
             
@@ -761,7 +721,7 @@ static bool monopolar_cikisBaslat(Monopolar_Handle_t *pH, uint16_t pwmCCR) {
         }
 
         pH->runtime.guc_gecikme = 0U;
-        HAL_Delay(200U);
+        genx_delay(200U);
 
         basladiMi = true;
 
@@ -810,7 +770,7 @@ static void monopolar_stopCut(Monopolar_Handle_t *pH) {
 
     genx_dacUygula(0.0f);
     gMonopolarCutSes = 2U;
-    HAL_Delay(100U);
+    genx_delay(100U);
     gEndoCutSay = 11U;
     genx_muxSecimi(0U);
     HAL_TIM_Base_Stop_IT(&htim5);
@@ -834,9 +794,9 @@ static void monopolar_stopCut(Monopolar_Handle_t *pH) {
     monopolar_ledAc(pCfg, false);
     
     genx_serbestBirak(&pH->runtime.genel);
-    HAL_Delay(300U);
+    genx_delay(300U);
 
-    (void)genx_sendCmdRetry("tsw 255,1");
+    (void)genx_sendCmd("tsw 255,1");
 }
 #endif /* (0 != MONO1_CUT_MASK) || (0 != MONO2_CUT_MASK) */
 
@@ -876,7 +836,7 @@ static void monopolar_cutBlend1(Monopolar_Handle_t *pH) {
             uint32_t guc = gAdc1DmaBuff[ADC_CH_MONO_PWR];
 
             pRt->guc_gecikme = 0U;
-            HAL_Delay(20U);
+            genx_delay(20U);
 
             if ((1U == pRt->yuz_start) && (guc > 120U)) {
                 
@@ -937,7 +897,7 @@ static void monopolar_cutBlend2(Monopolar_Handle_t *pH) {
             uint32_t guc = gAdc1DmaBuff[ADC_CH_MONO_PWR];
 
             pRt->guc_gecikme = 0U;
-            HAL_Delay(20U);
+            genx_delay(20U);
 
             if ((1U == pRt->yuz_start) && (guc > 130U)) {
                 
@@ -997,7 +957,7 @@ static void monopolar_cutBlend3(Monopolar_Handle_t *pH) {
             uint32_t guc = gAdc1DmaBuff[ADC_CH_MONO_PWR];
 
             pRt->guc_gecikme = 0U;
-            HAL_Delay(20U);
+            genx_delay(20U);
 
             if ((1U == pRt->yuz_start) && (guc > 130U)) {
                 
@@ -1190,7 +1150,7 @@ static void monopolar_coagSpray2(Monopolar_Handle_t *pH) {
 #endif /* (0 != MONO1_COAG_EN_SPRAY2) || (0 != MONO2_COAG_EN_SPRAY2) */
 
 
-#if (0 != MONO1_COAG_EN_SPRAY3) || (0 != MONO2_COAG_EN_SPRAY3)
+#if (0 != MONO1_COAG_EN_SPRAY3) || (0 != MONO2_COAG_EN_SPRAY3) || (0 != MONO1_COAG_EN_FULGURATION) || (0 != MONO2_COAG_EN_FULGURATION)
 /**
   * @brief COAG SPRAY3 ve FULGURATION başlatma
   * @param pH Kanal handle'ı
@@ -1210,7 +1170,7 @@ static void monopolar_coagSpray3(Monopolar_Handle_t *pH) {
         }
     }
 }
-#endif /* (0 != MONO1_COAG_EN_SPRAY3) || (0 != MONO2_COAG_EN_SPRAY3) */
+#endif /* (0 != MONO1_COAG_EN_SPRAY3) || (0 != MONO2_COAG_EN_SPRAY3) || (0 != MONO1_COAG_EN_FULGURATION) || (0 != MONO2_COAG_EN_FULGURATION) */
 
 
 #if (0 != MONO1_COAG_MASK) || (0 != MONO2_COAG_MASK)
@@ -1225,7 +1185,7 @@ static void monopolar_stopCoag(Monopolar_Handle_t *pH) {
 
     genx_dacUygula(0.0f);
     gMonopolarCoagSes = 2U;
-    HAL_Delay(100U);
+    genx_delay(100U);
     genx_muxSecimi(0U);
     HAL_GPIO_WritePin(MONO_KORUMA_GPIO_Port, MONO_KORUMA_Pin, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(SPRAY_RELAY_GPIO_Port, SPRAY_RELAY_Pin, GPIO_PIN_RESET);
@@ -1244,7 +1204,7 @@ static void monopolar_stopCoag(Monopolar_Handle_t *pH) {
     pH->runtime.durum = MONOPOLAR_DURUM_BOSTA;
     monopolar_ledAc(pCfg, false);
     genx_serbestBirak(&pH->runtime.genel);
-    HAL_Delay(300U);
-    (void)genx_sendCmdRetry("tsw 255,1");
+    genx_delay(300U);
+    (void)genx_sendCmd("tsw 255,1");
 }
 #endif /* (0 != MONO1_COAG_MASK) || (0 != MONO2_COAG_MASK) */
