@@ -126,10 +126,10 @@ typedef struct {
 typedef struct {
     Core_Channel_t genel;
     volatile Monopolar_State_e durum;   // TIM5 kesmesi okur
-    uint8_t basma;
-    uint8_t birakma;
+    uint32_t basma;
+    uint32_t birakma;
     uint8_t hata;
-    uint16_t guc_gecikme;
+    uint32_t guc_tick;
     uint8_t yuz_start;
     uint32_t user_watt;
     uint32_t user_mode;

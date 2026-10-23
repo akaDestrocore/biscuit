@@ -63,7 +63,7 @@ uint8_t gAlarmPlate = 0U;
 uint32_t gPlate = 0U;
 uint8_t gPlateError = 0U;
 uint8_t gDusukOncelikAlarm = 0U;
-uint16_t gDusukAlarmSay = 0U;
+uint16_t gDusukAlarmBasla = 0U;
 uint8_t gBipolarCutSes = 0U;
 uint8_t gBipolarCoagSes = 0U;
 volatile uint16_t gBeepTick = 0U;
@@ -249,23 +249,33 @@ void genx_serbestBirak(const Core_Channel_t *pSahip) {
 }
 
 /**
-  * @brief Koşul sağlandığı sürece sayar, 200'e ulaşınca sayacı sıfırlar
+  * @brief Koşul 20U boyunca kesintisiz sağlanırsa başarılı döner
   * @param kosul Sayılacak koşul
-  * @param pCnt Sayaç değişkenine işaretçi
-  * @retval true sayaç bitti, false henüz bitmedi
+  * @param pBasla Koşulun başladığı tick'i tutan değişkene işaretçi (0 = başlamadı)
+  * @retval GENX_SUCCESS süre doldu, GENX_ERROR henüz dolmadı
   */
-Genx_Status_t genx_sayacBittiMi(bool kosul, uint8_t *pCnt) {
+Genx_Status_t genx_sayacBittiMi(bool kosul, uint32_t  *pBasla) {
 
     Genx_Status_t status = GENX_ERROR;
 
     if (true == kosul) {
-        
-        (*pCnt)++;
 
-        if (200U <= *pCnt) {
-            *pCnt = 0U;
+        uint32_t simdi = HAL_GetTick();
+        
+        if (0U == *pBasla) {
+            
+            *pBasla = simdi;
+        }
+        
+        if ((simdi - *pBasla) >= 20U) {
+            
+            *pBasla = 0U;
             status = GENX_SUCCESS;
         }
+        
+    } else {
+        
+        *pBasla = 0U;
     }
 
     return status;

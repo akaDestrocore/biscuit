@@ -313,16 +313,13 @@ static void bipolar_yonetCut(Bipolar_Handle_t *pH) {
     bool trigger = (1U == pBip->genel.start) && (false == genx_baskaAktifVarMi(&pBip->genel));
 
     // Çıkış gücü ölçümü ve koruma
-    if ((1U == pBip->genel.start) && (UI_PAGE_MAIN == gAcikSayfa)) {
+    if ((1U == pBip->genel.start) && (UI_PAGE_MAIN == gAcikSayfa) && (BIPOLAR_STATE_ACTIVE == pBip->durum)) {
         
-        pBip->okuma_gecikme++;
-        
-        if (500U <= pBip->okuma_gecikme) {
+        if ((HAL_GetTick() - pBip->okuma_tick) >= 50U) {
             
             float guc = (float)gAdc1DmaBuff[ADC_CH_BIPOLAR_PWR];
 
-            pBip->okuma_gecikme = 0U;
-            genx_delay(20U);
+            pBip->okuma_tick = HAL_GetTick();
 
             if ((19.0f < pBip->pol) && (1U == pBip->koruma_start)) {
                 
@@ -340,7 +337,6 @@ static void bipolar_yonetCut(Bipolar_Handle_t *pH) {
 
                     pBip->koruma_veri = veri;
                     pBip->yeniden_hesap = true;
-                    genx_delay(20U);
                     if (((float)veri > pBip->pol) || (veri >= 90U)) {
                         pBip->formul_ac = 1U;
                     }
@@ -404,6 +400,7 @@ static void bipolar_yonetCut(Bipolar_Handle_t *pH) {
             genx_dacUygula(pBip->watt);
             bipolar_ledAc(BIPOLAR_ISLEV_CUT, true);
             pBip->durum = BIPOLAR_STATE_ACTIVE;
+            pBip->okuma_tick = HAL_GetTick();
             pBip->yeniden_hesap = false;
         } else {
             pBip->genel.start = 0U;
@@ -442,17 +439,14 @@ static void bipolar_yonetCoag(Bipolar_Handle_t *pH) {
     bool trigger = (1U == pBip->genel.start) && (false == genx_baskaAktifVarMi(&pBip->genel));
 
     // Çıkış gücü ölçümü ve koruma
-    if ((1U == pBip->genel.start) && (UI_PAGE_MAIN == gAcikSayfa)) {
+    if ((1U == pBip->genel.start) && (UI_PAGE_MAIN == gAcikSayfa) && (BIPOLAR_STATE_ACTIVE == pBip->durum)) {
         
-        pBip->okuma_gecikme++;
-        
-        if (500U <= pBip->okuma_gecikme) {
+        if ((HAL_GetTick() - pBip->okuma_tick) >= 50U) {
 
             float guc = (float)gAdc1DmaBuff[ADC_CH_BIPOLAR_PWR];
 
-            pBip->okuma_gecikme = 0U;
+            pBip->okuma_tick = HAL_GetTick();
             gLigasureWattYaz = gAdc1DmaBuff[ADC_CH_BIPOLAR_PWR];
-            genx_delay(20U);
             
             if ((20.0f <= pBip->pol) && (1U == pBip->koruma_start)) {
                 
@@ -472,7 +466,6 @@ static void bipolar_yonetCoag(Bipolar_Handle_t *pH) {
 
                     pBip->koruma_veri = veri;
                     pBip->yeniden_hesap = true;
-                    genx_delay(20U);
 
                     if (((float)veri > pBip->pol) || (veri >= 120U)) {
                         
@@ -537,6 +530,7 @@ static void bipolar_yonetCoag(Bipolar_Handle_t *pH) {
             genx_dacUygula(pBip->watt);
             bipolar_ledAc(BIPOLAR_ISLEV_COAG, true);
             pBip->durum = BIPOLAR_STATE_ACTIVE;
+            pBip->okuma_tick = HAL_GetTick();
             pBip->yeniden_hesap = false;
         } else {
 

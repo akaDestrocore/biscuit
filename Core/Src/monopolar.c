@@ -647,13 +647,11 @@ static void monopolar_cutCut(Monopolar_Handle_t *pH) {
 
     } else {
 
-        pRt->guc_gecikme++;
-        if ((pRt->guc_gecikme >= 1000U) && (1U == gMonopolarCutSes)) {
+        if (((HAL_GetTick() - pRt->guc_tick) >= 100U) && (1U == gMonopolarCutSes)) {
 
             uint32_t guc = gAdc1DmaBuff[ADC_CH_MONO_PWR];
 
-            pRt->guc_gecikme = 0U;
-            genx_delay(20U);
+            pRt->guc_tick = HAL_GetTick();
 
             if ((1U == pRt->yuz_start) && (guc > 70U)) {
                 float x = pRt->pol;
@@ -720,8 +718,8 @@ static bool monopolar_cikisBaslat(Monopolar_Handle_t *pH, uint16_t pwmCCR) {
             gMonopolarCoagSes = 1U;
         }
 
-        pH->runtime.guc_gecikme = 0U;
         genx_delay(200U);
+        pH->runtime.guc_tick = HAL_GetTick();
 
         basladiMi = true;
 
@@ -830,13 +828,11 @@ static void monopolar_cutBlend1(Monopolar_Handle_t *pH) {
         }
     } else {
 
-        pRt->guc_gecikme++;
-        if ((pRt->guc_gecikme >= 1000U) && (1U == gMonopolarCutSes)) {
+        if (((HAL_GetTick() - pRt->guc_tick) >= 100U) && (1U == gMonopolarCutSes)) {
 
             uint32_t guc = gAdc1DmaBuff[ADC_CH_MONO_PWR];
 
-            pRt->guc_gecikme = 0U;
-            genx_delay(20U);
+            pRt->guc_tick = HAL_GetTick();
 
             if ((1U == pRt->yuz_start) && (guc > 120U)) {
                 
@@ -891,13 +887,11 @@ static void monopolar_cutBlend2(Monopolar_Handle_t *pH) {
 
     } else {
 
-        pRt->guc_gecikme++;
-        if ((pRt->guc_gecikme >= 1000U) && (1U == gMonopolarCutSes)) {
+        if (((HAL_GetTick() - pRt->guc_tick) >= 100U) && (1U == gMonopolarCutSes)) {
 
             uint32_t guc = gAdc1DmaBuff[ADC_CH_MONO_PWR];
 
-            pRt->guc_gecikme = 0U;
-            genx_delay(20U);
+            pRt->guc_tick = HAL_GetTick();
 
             if ((1U == pRt->yuz_start) && (guc > 130U)) {
                 
@@ -951,13 +945,11 @@ static void monopolar_cutBlend3(Monopolar_Handle_t *pH) {
         }
     } else {
 
-        pRt->guc_gecikme++;
-        if ((pRt->guc_gecikme >= 1000U) && (1U == gMonopolarCutSes)) {
+        if (((HAL_GetTick() - pRt->guc_tick) >= 100U) && (1U == gMonopolarCutSes)) {
 
             uint32_t guc = gAdc1DmaBuff[ADC_CH_MONO_PWR];
 
-            pRt->guc_gecikme = 0U;
-            genx_delay(20U);
+            pRt->guc_tick = HAL_GetTick();
 
             if ((1U == pRt->yuz_start) && (guc > 130U)) {
                 

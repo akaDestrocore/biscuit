@@ -68,7 +68,7 @@ void selftest(void) {
                     alarm_yonet();
                     genx_delay(500U);
                     gDusukOncelikAlarm = 0U;
-                    gDusukAlarmSay = 0U;
+                    gDusukAlarmBasla = 0U;
                     HAL_GPIO_WritePin(ALARM_SOUND_R_GPIO_Port, ALARM_SOUND_R_Pin, GPIO_PIN_RESET);
                     HAL_TIM_PWM_Stop(&htim9, TIM_CHANNEL_2);
 

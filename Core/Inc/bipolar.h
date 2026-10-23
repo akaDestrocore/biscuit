@@ -86,9 +86,9 @@ typedef struct {
 typedef struct {
     Core_Channel_t genel;
     Bipolar_State_e durum;
-    uint8_t basma;
-    uint8_t birakma;
-    uint16_t okuma_gecikme;
+    uint32_t basma;
+    uint32_t birakma;
+    uint32_t okuma_tick;
     uint8_t olcum_sonuc;
     uint8_t formul_ac;
     uint8_t koruma_start;

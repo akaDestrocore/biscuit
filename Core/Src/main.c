@@ -84,7 +84,7 @@ static void MX_TIM5_Init(void);
   */
 static void NEXTION_Init(void) {
 
-	  nextion.pUsart = USART3;
+	nextion.pUsart = USART3;
     nextion.pGpio_port = GPIOB;
     nextion.rx_pin_num = 11U;
     nextion.tx_pin_num = 10U;
@@ -248,7 +248,7 @@ int main(void)
 
     (void)HAL_ADC_Start_DMA(&hadc1, (uint32_t *)gAdc1DmaBuff, ADC_CH_COUNT);
 
-	// selftest();
+	  selftest();
 
     monopolar_init();
     bipolar_init();

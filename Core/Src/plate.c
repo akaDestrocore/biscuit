@@ -19,7 +19,7 @@
   */
 void plate_yonet(void) {
 
-    static uint16_t gecikme = 0U;
+    static uint32_t sonTick = 0U;
     static uint8_t dualToSingle = 0U;
     static uint32_t sonPlate = 0U;
     static uint8_t sonAsiriDirenc = 0xFFU;
@@ -32,9 +32,7 @@ void plate_yonet(void) {
     
     sonSayfa = gAcikSayfa;
 
-    gecikme++;
-    
-    if (10000U <= gecikme) {
+    if ((HAL_GetTick() - sonTick) >= 900U) {
         
         float direnc = (float)gAdc1DmaBuff[ADC_CH_PLATE_RES];
         float ohmF;
@@ -42,7 +40,7 @@ void plate_yonet(void) {
         uint8_t ohmYaz;
         uint8_t ohmPb;
 
-        gecikme = 0U;
+        sonTick = HAL_GetTick();
         
         if (direnc > 4090.0f) { 
             

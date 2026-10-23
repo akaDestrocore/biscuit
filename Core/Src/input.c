@@ -15,11 +15,11 @@
 /* ============================================================
  * Özel: modül sabitleri
  * ============================================================*/
-static uint8_t gPedalError2Burst = 0U;
-static uint8_t gHandBirakma = 0U;
-static uint8_t gHandBasma = 0U;
-static uint8_t gTekPedalBirakma = 0U;
-static uint8_t gTekPedalBasma = 0U;
+static uint32_t gPedalError2Burst = 0U;
+static uint32_t gHandBirakma = 0U;
+static uint32_t gHandBasma = 0U;
+static uint32_t gTekPedalBirakma = 0U;
+static uint32_t gTekPedalBasma = 0U;
 
 /* ============================================================
  * Özel fonksiyon prototipleri

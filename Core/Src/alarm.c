@@ -53,11 +53,14 @@ void alarm_yonet(void) {
         HAL_GPIO_WritePin(ALARM_SOUND_R_GPIO_Port, ALARM_SOUND_R_Pin, GPIO_PIN_SET);
         htim9.Instance->PSC = 160U;
         HAL_TIM_PWM_Start(&htim9, TIM_CHANNEL_2);
+        
+        if (0U == gDusukAlarmBasla) {
+            gDusukAlarmBasla = HAL_GetTick();   // 0 = başlamadı; tick==0 ise 1 ms sonra yeniden alınır
+        }
 
-        gDusukAlarmSay++;
-        if (17000U == gDusukAlarmSay) {
+        if ((HAL_GetTick() - gDusukAlarmBasla) >= 750U) {
             gDusukOncelikAlarm = 0U;
-            gDusukAlarmSay = 0U;
+            gDusukAlarmBasla = 0U;
             HAL_GPIO_WritePin(ALARM_PWM_S_GPIO_Port, ALARM_PWM_S_Pin, GPIO_PIN_RESET);
             HAL_GPIO_WritePin(ALARM_SOUND_R_GPIO_Port, ALARM_SOUND_R_Pin, GPIO_PIN_RESET);
             HAL_TIM_PWM_Stop(&htim9, TIM_CHANNEL_2);
