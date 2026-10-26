@@ -268,7 +268,7 @@ extern UI_Page_e gAcikSayfa;
 extern uint32_t gPlate;
 extern uint8_t gPlateError;
 extern uint8_t gDusukOncelikAlarm;
-extern uint16_t gDusukAlarmBasla;
+extern uint32_t gDusukAlarmBasla;
 extern uint8_t gBipolarCutSes;
 extern uint8_t gBipolarCoagSes;
 extern volatile uint16_t gBeepTick;

@@ -52,17 +52,17 @@ void plate_yonet(void) {
             direnc = 150.0f; 
         }
         
-        ohmF = ohm = ((0.0000000265f * direnc * direnc * direnc) - (0.000076f * direnc * direnc) + (0.11f * direnc) - (22));//-22
-        
-        if (ohmF < 0.0f) { 
-            ohmF = 0.0f; 
+        ohmF = (0.0000000265f * direnc * direnc * direnc) - (0.000076f * direnc * direnc) + (0.11f * direnc) - 22.0f;
+
+        if (ohmF < 0.0f) {
+            ohmF = 0.0f;
         }
-        
+
         ohm = (uint32_t)ohmF;
         
-        if (ohm > 200U) { 
+        if (ohm > 200U) {
             
-            ohm = 200U; 
+            ohm = 200U;
         }
         
         if ((ohm > 10U) && (ohm < 46U)) { 

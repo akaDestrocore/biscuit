@@ -35,7 +35,15 @@ void selftest(void) {
 
     while (BIST_OK != durum) {
         if ((HAL_GetTick() - baslangicTick) >= 1U) {
-            gHighVolt = gAdc1DmaBuff[ADC_CH_PWR];
+            
+            uint32_t toplam = 0U;
+
+            for (uint32_t i = 0U; i < 20U; i++) {
+                toplam += gAdc1DmaBuff[ADC_CH_PWR];
+                genx_delay(1U);
+            }
+
+            gHighVolt = (toplam / 20U);
             basladi = true;
         }
 

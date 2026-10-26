@@ -55,7 +55,7 @@ void alarm_yonet(void) {
         HAL_TIM_PWM_Start(&htim9, TIM_CHANNEL_2);
         
         if (0U == gDusukAlarmBasla) {
-            gDusukAlarmBasla = HAL_GetTick();   // 0 = başlamadı; tick==0 ise 1 ms sonra yeniden alınır
+            gDusukAlarmBasla = HAL_GetTick();   // 0 = başlamadı
         }
 
         if ((HAL_GetTick() - gDusukAlarmBasla) >= 750U) {
