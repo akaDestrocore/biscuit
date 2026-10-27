@@ -13,7 +13,7 @@
 #include "genx.h"
 
 // Varsayılan modların kapatılması halinde
-#if (0U == BIPOLAR1_CUT_EN_CUTTING) || (0U == BIPOLAR2_CUT_EN_CUTTING)
+#if (0U == BIPOLAR1_CUT_EN_CUTTING) || ((0U == BIPOLAR2_CUT_EN_CUTTING) && (0U != BIPOLAR2_CUT_EN_LIGATION))
 #error "BIPOLAR CUT: CUTTING modu kapatildi"
 #endif
 
@@ -21,8 +21,8 @@
 #error "BIPOLAR1 COAG: STANDARD modu kapatildi"
 #endif
 
-#if (0U == BIPOLAR2_COAG_EN_LIGATION)
-#error "BIPOLAR2 COAG: LIGATION modu kapatildi"
+#if defined(GENX_400HF_L) && (0U == BIPOLAR2_COAG_EN_LIGATION)
+#warning "BIPOLAR2 COAG: LIGATION modu kapatildi"
 #endif
 
 Bipolar_Handle_t *gBipolarHandSahibi = NULL;

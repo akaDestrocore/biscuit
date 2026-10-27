@@ -23,6 +23,41 @@ extern "C" {
 #include <math.h>
 #include "genx.h"
 
+/* =========================================================================
+ * Tanımlar ve Makrolar
+ * ========================================================================= */
+
+ // -- Plate tanımları ------------------------------------------
+typedef enum {
+    PLATE_SINGLE    = 1U,
+    PLATE_DUAL      = 2U
+} Plate_e;
+
+// -- Alarm ses tanımları --------------------------------------
+typedef enum {
+    ALARM_SES_NONE          = 0U,
+    ALARM_SES_MONO_CUT      = 1U,
+    ALARM_SES_MONO_COAG     = 2U,
+    ALARM_SES_BIPOLAR_CUT   = 3U,
+    ALARM_SES_BIPOLAR_COAG  = 4U
+} Alarm_Ses_e;
+
+// -- Alarm yapılandırma ---------------------------------------
+typedef struct {
+    Alarm_Ses_e sesTonu;
+    uint16_t PSC;
+    const char *pErrorMsg;
+} Alarm_Config_t;
+
+static const Alarm_Config_t gAlarmConfigTable[] = {
+    { ALARM_SES_MONO_CUT,       210U, NULL },
+    { ALARM_SES_MONO_COAG,      280U, NULL },
+    { ALARM_SES_BIPOLAR_CUT,    320U, NULL },
+    { ALARM_SES_BIPOLAR_COAG,   390U, NULL }
+};
+
+#define ALARM_COUNT ((uint8_t)(sizeof(gAlarmConfigTable) / sizeof(gAlarmConfigTable[0])))
+
 #define CORE_MAX_CH 				8U // toplam mono/bipolar yol sayısı
 #define NEXTION_MAX_DENEME 			10U
 #define GENX_KUYRUK_BEKLE_MS		20U
@@ -32,7 +67,6 @@ extern char gNumBuff[NEXTION_CMD_MAX_LEN + 1U];
 
 extern DAC_HandleTypeDef hdac;
 extern TIM_HandleTypeDef htim2;
-extern TIM_HandleTypeDef htim3;
 extern TIM_HandleTypeDef htim4;
 extern TIM_HandleTypeDef htim5;
 extern TIM_HandleTypeDef htim9;

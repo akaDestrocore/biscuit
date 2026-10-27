@@ -248,10 +248,14 @@ int main(void)
 
     (void)HAL_ADC_Start_DMA(&hadc1, (uint32_t *)gAdc1DmaBuff, ADC_CH_COUNT);
 
-	  selftest();
+	selftest();
 
     monopolar_init();
     bipolar_init();
+
+#if (0U != BIPOLAR2_COAG_EN_LIGATION) || (0U != BIPOLAR2_COAG_EN_SEALSURE) || (0U != BIPOLAR2_COAG_EN_TISSUELOCK)
+	genx_sendCmd("S0_acilma.sealOn.val=1");
+#endif /* (0U != BIPOLAR2_COAG_EN_LIGATION) || (0U != BIPOLAR2_COAG_EN_SEALSURE) || (0U != BIPOLAR2_COAG_EN_TISSUELOCK) */
 
     while (1)
     {

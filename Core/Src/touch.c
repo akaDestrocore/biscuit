@@ -50,10 +50,15 @@ static const Get_Eeprom_t gSaveSteps[] = {
 	{ "get S12_b1_cut_mod.USER_MODE.val",	&gBipolar1Cut.runtime.user_mode,	sizeof(gBipolar1Cut.runtime.user_mode)  },
 	{ "get S11_b1_cog_wat.USER_VALUE.val",	&gBipolar1Coag.runtime.user_watt,   sizeof(gBipolar1Coag.runtime.user_watt) },
 	{ "get S13_b1_cog_mod.USER_MODE.val",	&gBipolar1Coag.runtime.user_mode,	sizeof(gBipolar1Coag.runtime.user_mode)	},
+#if (0 != BIPOLAR2_CUT_MASK)
 	{ "get S14_b2_cut_wat.USER_VALUE.val",	&gBipolar2Cut.runtime.user_watt,	sizeof(gBipolar2Cut.runtime.user_watt)	},
 	{ "get S16_b2_cut_mod.USER_MODE.val",	&gBipolar2Cut.runtime.user_mode,	sizeof(gBipolar2Cut.runtime.user_mode)	},
+#endif /* (0 != BIPOLAR2_CUT_MASK) */
+
+#if (0 != BIPOLAR2_COAG_MASK)
 	{ "get S15_b2_cog_wat.USER_VALUE.val",	&gBipolar2Coag.runtime.user_watt,	sizeof(gBipolar2Coag.runtime.user_watt)	},
 	{ "get S17_b2_cog_mod.USER_MODE.val",	&gBipolar2Coag.runtime.user_mode,	sizeof(gBipolar2Coag.runtime.user_mode)	},
+#endif /* (0 != BIPOLAR2_COAG_MASK) */
     { "get S18_plate_sec.USER_PLATE.val",  	&gPlate,         	                sizeof(gPlate)				            },
     { "get S25_ses_ayar.SES_VERI.val",     	&gSesVeri,       	                sizeof(gSesVeri)			            },
     { "get S31_endo_ayar.CUT_KADEME.val",	&gEndoCutKademe,	                sizeof(gEndoCutKademe)		            },
@@ -428,14 +433,16 @@ static void touch_basmaOlayi(uint16_t objName) {
         }
 
         case S14__OK_BUTTON: {
-            
+#if (0 != BIPOLAR2_CUT_MASK)
             touch_bipolarWattOk(&gBipolar2Cut);
+#endif
             break;
         }
 
         case S15__OK_BUTTON: {
-            
+#if (0 != BIPOLAR2_COAG_MASK)
             touch_bipolarWattOk(&gBipolar2Coag);
+#endif
             break;
         }
 
@@ -501,7 +508,7 @@ static void touch_basmaOlayi(uint16_t objName) {
         }
 
         case S16__OK_BUTTON: {
-            
+#if (0 != BIPOLAR2_CUT_MASK)
             (void)genx_getVarRetry(&gBipolar2Cut.runtime.user_mode, gBipolar2Cut.pCfg->pModeGetCmd, sizeof(gBipolar2Cut.runtime.user_mode));
     
             if (true == bipolar_modKontrol(&gBipolar2Cut)) {
@@ -515,6 +522,7 @@ static void touch_basmaOlayi(uint16_t objName) {
                 return;
             }
             touch_bipolarSayfaDonus(&gBipolar2Cut);
+#endif /* (0 != BIPOLAR2_CUT_MASK) */
             break;
         }
 
@@ -538,7 +546,7 @@ static void touch_basmaOlayi(uint16_t objName) {
         }
 
         case S17__OK_BUTTON: {
-            
+#if (0 != BIPOLAR2_COAG_MASK)
             (void)genx_getVarRetry(&gBipolar2Coag.runtime.user_mode, gBipolar2Coag.pCfg->pModeGetCmd, sizeof(gBipolar2Coag.runtime.user_mode));
     
             if (true == bipolar_modKontrol(&gBipolar2Coag)) {
@@ -553,13 +561,14 @@ static void touch_basmaOlayi(uint16_t objName) {
             }
             touch_bipolarCoagModUygula(&gBipolar2Coag);
             touch_bipolarSayfaDonus(&gBipolar2Coag);
+#endif /* (0 != BIPOLAR2_COAG_MASK) */
             break;
         }
 
         case S31__OK_BUTTON: {
             // Mono2'nin endocut sayfası bu değil
-            if ( ((MONOPOLAR_CUTMODE_POLYPECTOMY == gMono1Cut.runtime.user_mode) & (true == monopolar_modEtkinMi(&gMono1Cut, MONOPOLAR_CUTMODE_POLYPECTOMY))) \
-                || ((MONOPOLAR_CUTMODE_PAPILLOTOMES == gMono1Cut.runtime.user_mode) & (true == monopolar_modEtkinMi(&gMono1Cut, MONOPOLAR_CUTMODE_PAPILLOTOMES))) ) {
+            if ( ((MONOPOLAR_CUTMODE_POLYPECTOMY == gMono1Cut.runtime.user_mode) && (true == monopolar_modEtkinMi(&gMono1Cut, MONOPOLAR_CUTMODE_POLYPECTOMY))) \
+                || ((MONOPOLAR_CUTMODE_PAPILLOTOMES == gMono1Cut.runtime.user_mode) && (true == monopolar_modEtkinMi(&gMono1Cut, MONOPOLAR_CUTMODE_PAPILLOTOMES))) ) {
                 (void)genx_getVarRetry(&gEndoCutKademe, "get S31_endo_ayar.CUT_KADEME.val", sizeof(gEndoCutKademe));
                 (void)genx_getVarRetry(&gEndoCoagKademe, "get S31_endo_ayar.COAG_KADEME.val", sizeof(gEndoCoagKademe));
                 (void)genx_getVarRetry(&gEndoCutSure, "get S31_endo_ayar.CUT_SURE.val", sizeof(gEndoCutSure));
@@ -708,8 +717,14 @@ static void touch_polGuncelle(void) {
     monopolar_polHesap(&gMono2Coag);
     bipolar_polHesap(&gBipolar1Cut);
     bipolar_polHesap(&gBipolar1Coag);
+#if (0 != BIPOLAR2_CUT_MASK)
     bipolar_polHesap(&gBipolar2Cut);
+#endif
+
+#if (0 != BIPOLAR2_COAG_MASK)
     bipolar_polHesap(&gBipolar2Coag);
+#endif
+
 }
 
 /**
@@ -784,9 +799,11 @@ static void touch_veriKayitOku(void) {
         touch_bipolarCoagModUygula(&gBipolar1Coag);
     }
 
+#if (0 != BIPOLAR2_COAG_MASK)
     if (true == touch_bipolarWattKontrol(&gBipolar2Coag)) {
         touch_bipolarCoagModUygula(&gBipolar2Coag);
     }
+#endif /* (0 != BIPOLAR2_COAG_MASK) */
 
     if ((PLATE_SINGLE != gPlate) && (PLATE_DUAL != gPlate)) {
         
@@ -839,14 +856,19 @@ static void touch_modDogrula(void) {
     if (true == bipolar_modKontrol(&gBipolar1Coag)) {
         (void)genx_sendNum(gNumBuff, sizeof(gNumBuff), "S13_b1_cog_mod.USER_MODE.val=", (int16_t)gBipolar1Coag.pCfg->varsayilan_mod);
     }
-    
+
+#if (0 != BIPOLAR2_CUT_MASK)
     if (true == bipolar_modKontrol(&gBipolar2Cut)) {
         (void)genx_sendNum(gNumBuff, sizeof(gNumBuff), "S16_b2_cut_mod.USER_MODE.val=", (int16_t)gBipolar2Cut.pCfg->varsayilan_mod);
     }
+#endif /* (0 != BIPOLAR2_CUT_MASK) */
 
+#if (0 != BIPOLAR2_COAG_MASK)
     if (true == bipolar_modKontrol(&gBipolar2Coag)) {
         (void)genx_sendNum(gNumBuff, sizeof(gNumBuff), "S17_b2_cog_mod.USER_MODE.val=", (int16_t)gBipolar2Coag.pCfg->varsayilan_mod);
     }
+#endif /* (0 != BIPOLAR2_COAG_MASK) */
+
 }
 
 /**
@@ -869,7 +891,15 @@ static void touch_bipolarWattOk(Bipolar_Handle_t *pH) {
   */
 static void touch_bipolarSayfaDonus(const Bipolar_Handle_t *pH) {
 
+    if (NULL == pH) {
+        return;
+    }
+
     const Bipolar_ModeInfo_t *pModBilgi = bipolar_modBul(pH->pCfg->function, pH->runtime.user_mode);
+
+    if (NULL == pModBilgi) {
+        return;
+    }
 
     if ((pH->runtime.user_watt > 0U) && (pH->runtime.user_watt <= pModBilgi->max_watt)) {
         (void)genx_setPage(UI_PAGE_MAIN);
@@ -911,7 +941,9 @@ static void touch_bipolarRoleUygula(void) {
         pAktif = gBipolarHandSahibi;
     
     } else if (1U == gBipolar2PedalCift) {
+#if (0 != BIPOLAR2_COAG_MASK)
         pAktif = &gBipolar2Coag;
+#endif
     
     } else if (1U == gBipolar1PedalCift) {
         pAktif = &gBipolar1Coag;
@@ -944,7 +976,15 @@ static void touch_bipolarRoleUygula(void) {
   */
 static void touch_bipolarCoagModUygula(Bipolar_Handle_t *pH) {
 
+    if (NULL == pH) {
+        return;
+    }
+
     const Bipolar_ModeInfo_t *pModBilgi = bipolar_modBul(pH->pCfg->function, pH->runtime.user_mode);
+
+    if (NULL == pModBilgi) {
+        return;
+    }
 
     if (NULL != pModBilgi) {
         gAutoStop2 = 0U;

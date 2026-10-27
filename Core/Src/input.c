@@ -74,7 +74,9 @@ void input_yonet(void) {
 static void input_autoStopTemizle(void) {
 
     gBipolar1Coag.runtime.autostop_etkin = 0U;
+#if (0 != BIPOLAR2_COAG_MASK)
     gBipolar2Coag.runtime.autostop_etkin = 0U;
+#endif
     gLigasureWattYaz = 0U;
 }
 
@@ -83,11 +85,21 @@ static void input_autoStopTemizle(void) {
   * @retval None
   */
 static void input_bipolarTara(void) {
-
+#if (0 != BIPOLAR1_CUT_MASK)
     Bipolar_Runtime_t *pB1Cut = &gBipolar1Cut.runtime;
+#endif
+
+#if (0 != BIPOLAR1_COAG_MASK)
     Bipolar_Runtime_t *pB1Coag = &gBipolar1Coag.runtime;
+#endif
+
+#if (0 != BIPOLAR2_CUT_MASK)
     Bipolar_Runtime_t *pB2Cut = &gBipolar2Cut.runtime;
+#endif
+
+#if (0 != BIPOLAR2_COAG_MASK)
     Bipolar_Runtime_t *pB2Coag = &gBipolar2Coag.runtime;
+#endif
     bool izinVerildi;
     bool modAktif;
 
@@ -132,6 +144,7 @@ static void input_bipolarTara(void) {
     }
 
     // -- Bipolar2 CUT ---------------------------------------
+#if (0 != BIPOLAR2_CUT_MASK)
     izinVerildi = (false == genx_baskaAktifVarMi(NULL));
 
     if (GENX_SUCCESS == genx_sayacBittiMi(BIPOLAR2_CUT_LIGASURE_AYAK_BASILI() && izinVerildi, &pB2Cut->basma)) {
@@ -143,8 +156,10 @@ static void input_bipolarTara(void) {
         pB2Cut->basma = 0U;
         pB2Cut->genel.start = 0U;
     }
+#endif /* (0 != BIPOLAR2_CUT_MASK) */
 
     // -- Bipolar2 COAG --------------------------------------
+#if (0 != BIPOLAR2_COAG_MASK)
     izinVerildi = (false == genx_baskaAktifVarMi(NULL)) && (0U == gAutoStopCiftPedal) && (0U == gAutoStopTekPedal) && (0U == gBipolarHand);
     modAktif = (0U == gAutoStopTekPedal) && (0U == gBipolarHand) && ((1U == pB2Coag->genel.start) || (1U == gAutoStopCiftPedal)) \
                 && (1U == gBipolar2PedalCift);
@@ -171,7 +186,7 @@ static void input_bipolarTara(void) {
             gLigasurePedal = 0U;
         }
     }
-
+#endif /* (0 != BIPOLAR2_COAG_MASK) */
     // -- Bipolar tek pedal ----------------------------------
     izinVerildi = (false == genx_baskaAktifVarMi(NULL)) && (0U == gAutoStopTekPedal) && (0U == gBipolarHand);
     modAktif = (1U == pB1Coag->genel.start) && (1U == gAutoStopTekPedal) && (0U == gBipolarHand);
@@ -190,10 +205,21 @@ static void input_bipolarTara(void) {
     }
 
     // -- Bipolar hand ---------------------------------------
-    izinVerildi = (0U == pB1Coag->genel.start) && (0U == gAutoStop2) && (1U == gBipolarHand) && (0U == gBipolar1PedalCift) \
-                && (0U == gBipolar2PedalCift) && (0U == pB2Cut->genel.start) && (0U == pB2Coag->genel.start) \
-                && (false == genx_baskaAktifVarMi(NULL));
-    modAktif = ((1U == pB2Coag->genel.start) || (1U == pB1Coag->genel.start) || (1U == gAutoStop2)) && (1U == gBipolarHand);
+    izinVerildi = (0U == pB1Coag->genel.start) && (0U == gAutoStop2) && (1U == gBipolarHand) && (0U == gBipolar1PedalCift) &&
+    (0U == gBipolar2PedalCift)
+#if (0 != BIPOLAR2_CUT_MASK)
+    && (0U == pB2Cut->genel.start)
+#endif
+#if (0 != BIPOLAR2_COAG_MASK)
+    && (0U == pB2Coag->genel.start)
+#endif
+    && (false == genx_baskaAktifVarMi(NULL));
+    
+    modAktif = ((1U == pB1Coag->genel.start) || (1U == gAutoStop2) 
+#if (0 != BIPOLAR2_COAG_MASK)
+    || (1U == pB2Coag->genel.start)
+#endif
+) && (1U == gBipolarHand);
 
     if (NULL != gBipolarHandSahibi) {
         pModBilgi = bipolar_modBul(gBipolarHandSahibi->pCfg->function, gBipolarHandSahibi->runtime.user_mode);
