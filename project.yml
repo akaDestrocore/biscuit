@@ -16,7 +16,7 @@
   # optional features. If you don't need them, keep them turned off for performance
   :use_mocks: TRUE
   :use_test_preprocessor: :none  # options are :none, :mocks, :tests, or :all
-  :use_backtrace: :simple        # options are :none, :simple, or :gdb
+  :use_backtrace: :gdb          # options are :none, :simple, or :gdb
 
   # tweak the way ceedling handles automatic tasks
   :build_root: tests/build
@@ -60,7 +60,7 @@
     - gcov                            # test coverage using gcov. Requires gcc, gcov, and a coverage analyzer like gcovr
     #- cppcheck                       # static analysis using cppcheck. Requires cppcheck to be installed
     #- valgrind                       # memory analysis using valgrind. Requires valgrind to be installed (Linux only)
-    #- sanitize                       # ASan, UBSan, and leak checks. Requires a compiler with sanitizers (Linux or macOS)
+    - sanitize                       # ASan, UBSan, and leak checks. Requires a compiler with sanitizers (Linux or macOS)
     #- bullseye                       # test coverage using bullseye. Requires bullseye for your platform
     #- command_hooks                  # write custom actions to be called at different points during the build process
     #- compile_commands_json_db       # generate a compile_commands.json file
@@ -106,6 +106,7 @@
   :include:
     - tests/test/support
     - Core/Inc
+    - Core/Src
     - Drivers/STM32F4xx_HAL_Driver/Inc
     - Drivers/CMSIS/Include
     - Drivers/CMSIS/Device/ST/STM32F4xx/Include

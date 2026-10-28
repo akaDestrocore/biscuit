@@ -224,14 +224,14 @@ static bool nextion_buildNumCmd(char *pBuf, uint32_t bufSize, const char *pPrefi
         digits[digitLen] = '0';
         digitLen++;
     } else {
-        while ((0U != uVal) && (digitLen < NEXTION_NUM_MAX_DIGITS)) {
+        while (0U != uVal) {
             digits[digitLen] = (char)('0' + (uVal % 10U));
             uVal /= 10U;
             digitLen++;
         }
     }
 
-    if ((true == isNeg) && (digitLen < NEXTION_NUM_MAX_DIGITS)) {
+    if (true == isNeg) {
         digits[digitLen] = '-';
         digitLen++;
     }
@@ -763,15 +763,11 @@ static uint8_t txBuff_pop(void) {
  * @retval Kullanılabilir boş alan
  */
 static uint32_t txBuff_freeSpace(void) {
-    
+
     uint32_t head = gTxBuff.head;
     uint32_t tail = gTxBuff.tail;
 
-    if (head >= tail) {
-        return (NEXTION_RING_BUFF_SIZE - (head - tail) - 1U); 
-    }
-
-    return ((tail - head) - 1U);
+    return ((tail + NEXTION_RING_BUFF_SIZE - head - 1U) % NEXTION_RING_BUFF_SIZE);
 }
 
 /**
@@ -922,9 +918,6 @@ static void nextion_storeFrameFromRxBuffer(void) {
 
     if (payloadLen > 1U) {
         frame.length = (uint16_t)(payloadLen - 1U);
-        if (frame.length > NEXTION_RX_FRAME_MAX_LEN) {
-            frame.length = NEXTION_RX_FRAME_MAX_LEN;
-        }
 
         for (i = 0U; i < frame.length; i++) {
             frame.data[i] = gRxFrame[i + 1U];
@@ -1032,9 +1025,7 @@ static bool nextion_startTx(void)
     }
 
     for (i = 0U; i < cmdLen; i++) {
-        if (false == txBuff_push((uint8_t)pCmd[i])) {
-            return false;
-        }
+        (void)txBuff_push((uint8_t)pCmd[i]);
     }
 
     // 0xFF 0xFF 0xFF
