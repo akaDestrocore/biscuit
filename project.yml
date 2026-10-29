@@ -63,7 +63,7 @@
     - sanitize                       # ASan, UBSan, and leak checks. Requires a compiler with sanitizers (Linux or macOS)
     #- bullseye                       # test coverage using bullseye. Requires bullseye for your platform
     #- command_hooks                  # write custom actions to be called at different points during the build process
-    #- compile_commands_json_db       # generate a compile_commands.json file
+    - compile_commands_json_db       # generate a compile_commands.json file
     #- dependencies                   # automatically fetch 3rd party libraries, etc.
     #- fake_function_framework        # use FFF instead of CMock
 
@@ -101,7 +101,8 @@
 # see documentation for the many options for specifying this.
 :paths:
   :test:
-    - tests/
+    - tests/unit/**
+    - tests/integration/**
   :source: []
   :include:
     - tests/test/support
@@ -120,6 +121,7 @@
 :files:
   :source:
     - Core/Src/nextion.c
+    - Core/Src/core.c
 
 # Compilation symbols to be injected into builds
 # See documentation for advanced options:
@@ -240,7 +242,7 @@
   :flag: "-l${1}"
   :path_flag: "-L \"${1}\""
   :system: []    # for example, you might list 'm' to grab the math library
-  :test: []
+  :test: [m]
   :release: []
 
 ################################################################

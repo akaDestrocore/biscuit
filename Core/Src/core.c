@@ -339,9 +339,10 @@ void genx_PwrDegeriniOku(void) {
         sonTik = HAL_GetTick();
         gHighVolt = gAdc1DmaBuff[ADC_CH_PWR];
         gPwrYeni = true;
-        (void)genx_sendNum(gNumBuff, sizeof(gNumBuff), "n9.val=", (int16_t)gHighVolt);
-        (void)genx_sendNum(gNumBuff, sizeof(gNumBuff), "n10.val=", (int16_t)gMonoPwrKoruma);
-        (void)genx_sendNum(gNumBuff, sizeof(gNumBuff), "n8.val=", (int16_t)gBipolar1Cut.runtime.koruma_veri);
+        // DBG:
+        // (void)genx_sendNum(gNumBuff, sizeof(gNumBuff), "n9.val=", (int16_t)gHighVolt);
+        // (void)genx_sendNum(gNumBuff, sizeof(gNumBuff), "n10.val=", (int16_t)gMonoPwrKoruma);
+        // (void)genx_sendNum(gNumBuff, sizeof(gNumBuff), "n8.val=", (int16_t)gBipolar1Cut.runtime.koruma_veri);
     }
 }
 
